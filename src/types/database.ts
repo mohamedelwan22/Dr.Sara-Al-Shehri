@@ -1,0 +1,309 @@
+/**
+ * أنواع قاعدة البيانات — تطابق 001_schema.sql حرفيًا.
+ */
+
+export type ContentStatus = 'draft' | 'published' | 'scheduled' | 'archived';
+export type AppRole = 'admin' | 'user';
+
+export type AxisContentType =
+  | 'research'
+  | 'publication'
+  | 'supervision'
+  | 'discussion'
+  | 'project'
+  | 'course'
+  | 'lecture';
+
+export interface Profile {
+  id: string;
+  display_name: string | null;
+  locale: 'ar' | 'en';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserRole {
+  user_id: string;
+  role: AppRole;
+  created_at: string;
+}
+
+export interface SiteSetting {
+  id: string;
+  key: string;
+  value: Record<string, unknown>;
+  is_public: boolean;
+  updated_at: string;
+}
+
+export interface ProfileContent {
+  id: string;
+  section: string;
+  title_ar: string | null;
+  title_en: string | null;
+  body_ar: string | null;
+  body_en: string | null;
+  status: ContentStatus;
+  published_at: string | null;
+  updated_at: string;
+}
+
+export interface ResearchInterest {
+  id: string;
+  title_ar: string;
+  title_en: string | null;
+  description_ar: string | null;
+  description_en: string | null;
+  sort_order: number;
+  status: ContentStatus;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ScientificAxis {
+  id: string;
+  slug: string;
+  name_ar: string;
+  name_en: string | null;
+  description_ar: string | null;
+  description_en: string | null;
+  status: ContentStatus;
+  sort_order: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ResearchPaper {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  author_ar: string | null;
+  author_en: string | null;
+  institution_ar: string | null;
+  institution_en: string | null;
+  publication_year: number | null;
+  abstract_ar: string | null;
+  abstract_en: string | null;
+  document_path: string | null;
+  status: ContentStatus;
+  published_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ScientificSupervision {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  researcher_ar: string | null;
+  researcher_en: string | null;
+  university_ar: string | null;
+  university_en: string | null;
+  degree: string | null;
+  summary_ar: string | null;
+  summary_en: string | null;
+  completion_date: string | null;
+  status: ContentStatus;
+  published_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ResearchProject {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  description_ar: string | null;
+  description_en: string | null;
+  project_status: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: ContentStatus;
+  published_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ProjectRelatedItem {
+  id: string;
+  project_id: string;
+  item_type: 'supervision' | 'discussion';
+  item_id: string;
+  sort_order: number | null;
+}
+
+export interface Course {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  description_ar: string | null;
+  description_en: string | null;
+  activity_date: string | null;
+  location_ar: string | null;
+  location_en: string | null;
+  status: ContentStatus;
+  published_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ContentAxisLink {
+  id: string;
+  axis_id: string;
+  content_type: AxisContentType;
+  content_id: string;
+  created_at: string | null;
+}
+
+export interface News {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  excerpt_ar: string | null;
+  excerpt_en: string | null;
+  body_ar: string | null;
+  body_en: string | null;
+  image_path: string | null;
+  status: ContentStatus;
+  published_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Announcement {
+  id: string;
+  title_ar: string;
+  title_en: string | null;
+  link_url: string | null;
+  icon: string | null;
+  active_from: string | null;
+  active_until: string | null;
+  sort_order: number | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title_ar: string;
+  title_en: string | null;
+  event_type: string;
+  starts_at: string;
+  ends_at: string | null;
+  location_ar: string | null;
+  location_en: string | null;
+  source_type: string | null;
+  source_id: string | null;
+  status: ContentStatus;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ContactSubmission {
+  id: string;
+  user_id: string | null;
+  type: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  payload: Record<string, unknown>;
+  status: 'new' | 'in_review' | 'responded' | 'closed';
+  internal_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ContactAttachment {
+  id: string;
+  submission_id: string;
+  storage_path: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string | null;
+}
+
+export interface Favorite {
+  id: string;
+  user_id: string;
+  content_type: string;
+  content_id: string;
+  created_at: string | null;
+}
+
+export interface ContentInteraction {
+  id: number;
+  user_id: string | null;
+  content_type: string;
+  content_id: string;
+  visitor_hash: string | null;
+  created_at: string | null;
+}
+
+export interface Media {
+  id: string;
+  bucket: string;
+  storage_path: string;
+  alt_ar: string | null;
+  alt_en: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
+  created_at: string | null;
+}
+
+export interface AuditLog {
+  id: number;
+  actor_id: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+}
+
+/** صفوف مشتركة بين الجداول المتطابقة (publications/lectures/insights). */
+export type Publication = ResearchPaper;
+export type Lecture = Course;
+export type ScientificInsight = News;
+export type ScientificDiscussion = ScientificSupervision;
+
+/** نتيجة استعلامات البحث عبر RPC. */
+export interface SearchResultRow {
+  content_type: string;
+  content_id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  excerpt_ar: string | null;
+  excerpt_en: string | null;
+}
+
+/** إحصائيات محور علمي عبر RPC. */
+export interface AxisContentCount {
+  content_type: AxisContentType;
+  count: number;
+}
+
+/** عنصر محتوى مرتبط بمحور عبر RPC (009_functions_metrics.sql). */
+export interface AxisItemResult {
+  content_type: AxisContentType;
+  content_id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string | null;
+  published_at: string | null;
+}
+
+/** مقاييس تفاعل مجمّعة لعنصر محتوى. */
+export interface ContentMetrics {
+  views: number;
+  downloads: number;
+  shares: number;
+  favorites: number;
+}
