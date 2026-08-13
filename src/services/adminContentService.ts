@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase';
+import { shouldStampPublishedAt } from '@/lib/content';
 import type {
   AuditLog,
   ContactSubmission,
@@ -102,9 +103,13 @@ export const adminContentService = {
   async create<T>(entity: string, payload: Record<string, unknown>): Promise<T> {
     const { table } = ADMIN_ENTITY_MAP[entity];
     if (!table) throw new Error(`unknown-admin-entity:${entity}`);
+    const body = { ...payload };
+    if (shouldStampPublishedAt(table, payload.status, payload.published_at)) {
+      body.published_at = new Date().toISOString();
+    }
     const { data, error } = await requireSupabase()
       .from(table)
-      .insert(payload)
+      .insert(body)
       .select('*')
       .single();
     if (error) throw error;
@@ -118,9 +123,20 @@ export const adminContentService = {
   ): Promise<T> {
     const { table } = ADMIN_ENTITY_MAP[entity];
     if (!table) throw new Error(`unknown-admin-entity:${entity}`);
+    const body = { ...payload };
+    if (shouldStampPublishedAt(table, payload.status, payload.published_at)) {
+      const { data: existing } = await requireSupabase()
+        .from(table)
+        .select('published_at')
+        .eq('id', id)
+        .maybeSingle();
+      if (existing && shouldStampPublishedAt(table, payload.status, (existing as { published_at?: unknown }).published_at)) {
+        body.published_at = new Date().toISOString();
+      }
+    }
     const { data, error } = await requireSupabase()
       .from(table)
-      .update(payload)
+      .update(body)
       .eq('id', id)
       .select('*')
       .single();

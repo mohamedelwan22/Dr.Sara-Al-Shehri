@@ -91,9 +91,9 @@ export function Header() {
             <Link to="/" aria-label={t('nav.home')} className="flex items-center gap-2">
               <LogoMark className="h-10 w-10 sm:h-11 sm:w-11" />
               <div className="leading-tight">
-                <h1 className="font-display text-sm font-bold text-primary-950 sm:text-lg">
+                <p className="font-display text-sm font-bold text-primary-950 sm:text-lg">
                   أ.د. سارة بنت عزيز الشهري
-                </h1>
+                </p>
                 <p className="text-[11px] font-bold text-gold-600 sm:text-xs">
                   منصة علمية في الحديث وعلومـه
                 </p>

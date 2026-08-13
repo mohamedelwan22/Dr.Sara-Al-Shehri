@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase';
+import { buildIlikeOr, totalPages } from '@/lib/content';
 import type { PaginatedResult } from './researchService';
 import type { ListFilters } from './researchService';
 import type { ScientificSupervision } from '@/types';
@@ -49,6 +50,13 @@ async function listDatedContent<T>(
     query = query.in('id', ids);
   }
 
+  const qFilter = filters.q
+    ? buildIlikeOr(['title_ar', 'title_en', 'researcher_ar'], filters.q)
+    : '';
+  if (qFilter) {
+    query = query.or(qFilter);
+  }
+
   const rangeStart = (page - 1) * pageSize;
   query = query.range(rangeStart, rangeStart + pageSize - 1);
 
@@ -56,24 +64,7 @@ async function listDatedContent<T>(
   if (error) throw error;
   const rows = data ?? [];
 
-  if (filters.q) {
-    const q = filters.q.trim();
-    const filtered = (rows as Array<Record<string, unknown>>).filter(
-      (r) =>
-        String(r.title_ar ?? '').includes(q) ||
-        String(r.researcher_ar ?? '').includes(q) ||
-        String(r.title_en ?? '').includes(q),
-    );
-    return {
-      data: filtered as T[],
-      count: filtered.length,
-      page,
-      pageSize,
-      totalPages: Math.max(1, Math.ceil(filtered.length / pageSize)),
-    };
-  }
-
-  return { data: rows, count: count ?? rows.length, page, pageSize, totalPages: Math.max(1, Math.ceil((count ?? rows.length) / pageSize)) };
+  return { data: rows, count: count ?? rows.length, page, pageSize, totalPages: totalPages(count ?? rows.length, pageSize) };
 }
 
 async function getBySlug(table: string, slug: string) {

@@ -121,7 +121,7 @@ export function AdminLayout() {
             >
               <Menu className="h-5 w-5" />
             </button>
-            <h1 className="font-display text-lg font-bold text-white">{t('admin.title')}</h1>
+            <p className="font-display text-lg font-bold text-white">{t('admin.title')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Link to="/" className="flex items-center gap-1 text-xs font-bold text-primary-200 hover:text-white">

@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase';
+import { buildIlikeOr, totalPages } from '@/lib/content';
 import type { ResearchPaper, Publication } from '@/types';
 
 export interface PaginatedResult<T> {
@@ -53,28 +54,25 @@ async function fetchList<T>(
     query = query.in('id', ids);
   }
 
+  const qFilter = filters.q ? buildIlikeOr(['title_ar', 'title_en'], filters.q) : '';
+  if (qFilter) {
+    query = query.or(qFilter);
+  }
+
   const rangeStart = (page - 1) * pageSize;
   query = query.range(rangeStart, rangeStart + pageSize - 1);
 
   const { data, error, count } = await query;
   if (error) throw error;
 
-  let rows = (data as T[]) ?? [];
-
-  if (filters.q) {
-    const q = filters.q.trim();
-    rows = rows.filter((row) =>
-      (row as ResearchPaper).title_ar.includes(q) ||
-      ((row as ResearchPaper).title_en ?? '').includes(q),
-    );
-  }
+  const rows = (data as unknown as T[]) ?? [];
 
   return {
     data: rows,
     count: count ?? rows.length,
     page,
     pageSize,
-    totalPages: Math.max(1, Math.ceil((count ?? rows.length) / pageSize)),
+    totalPages: totalPages(count ?? rows.length, pageSize),
   };
 }
 
