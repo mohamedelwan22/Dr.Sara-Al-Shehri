@@ -30,3 +30,6 @@ dist-ssr
 
 # Markdown documentation
 *.md
+
+docs/
+project-plan/
