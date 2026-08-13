@@ -527,6 +527,7 @@ export const en = {
     backHome: 'Back to home',
     unauthorizedDownload: 'You need to sign in to download this file',
     uploadFailed: 'File upload failed',
+    downloadFailed: 'Could not open the attachment',
     generic: 'Unexpected error',
     offline: 'You are currently offline',
   },

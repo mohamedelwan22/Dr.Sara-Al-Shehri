@@ -266,7 +266,6 @@ export function HomePage() {
                 <>
                   <StatCard icon={Eye} label={t('home.statVisitors')} value={formatCount(stats.total_views)} />
                   <StatCard icon={Download} label={t('home.statDownloads')} value={formatCount(stats.total_downloads)} />
-                  <StatCard icon={Users} label={t('home.statUsers')} value={formatCount(stats.total_users)} />
                   <StatCard icon={BookOpen} label={t('home.statResearch')} value={formatCount(stats.published_research)} />
                 </>
               ) : null}

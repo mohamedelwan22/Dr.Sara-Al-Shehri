@@ -527,6 +527,7 @@ export const ar = {
     backHome: 'العودة إلى الرئيسية',
     unauthorizedDownload: 'تحتاج تسجيل الدخول لتنزيل هذا الملف',
     uploadFailed: 'فشل رفع الملف',
+    downloadFailed: 'تعذر فتح المرفق',
     generic: 'حدث خطأ غير متوقع',
     offline: 'أنت غير متصل بالإنترنت حاليًا',
   },

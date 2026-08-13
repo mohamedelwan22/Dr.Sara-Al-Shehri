@@ -12,7 +12,7 @@ import { Pagination } from '@/components/ui';
 import { LoadingState } from '@/components/ui';
 import { useToast } from '@/components/ui';
 import { formatDate, formatBytes } from '@/lib/utils';
-import { getPublicStorageUrl } from '@/lib/supabase';
+import { requireSupabase } from '@/lib/supabase';
 import type { ContactSubmission } from '@/types';
 
 const CONTACT_BUCKET = 'contact-attachments';
@@ -38,6 +38,19 @@ export function InboxPage() {
     queryKey: queryKeys.admin.submissions({ status: status || null, page }),
     queryFn: () => adminContentService.listSubmissions({ status: status || null, page }),
   });
+
+  // Contact attachments live in a PRIVATE bucket. Generate an admin-authenticated
+  // signed URL on demand (never a public URL, which would 404 / leak the object).
+  const openAttachment = async (storagePath: string) => {
+    const { data, error } = await requireSupabase()
+      .storage.from(CONTACT_BUCKET)
+      .createSignedUrl(storagePath, 60 * 60);
+    if (error || !data?.signedUrl) {
+      toast.error(t('errors.downloadFailed'));
+      return;
+    }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  };
 
   const attachmentsQuery = useQuery({
     queryKey: ['admin', 'submission', 'attachments', selected?.id ?? ''],
@@ -187,18 +200,17 @@ export function InboxPage() {
                 <ul className="space-y-2">
                   {attachmentsQuery.data.map((file) => (
                     <li key={file.id}>
-                      <a
-                        href={getPublicStorageUrl(CONTACT_BUCKET, file.storage_path)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between gap-2 rounded-lg border border-primary-100 px-3 py-2 text-sm text-primary-700 hover:bg-primary-50"
+                      <button
+                        type="button"
+                        onClick={() => void openAttachment(file.storage_path)}
+                        className="flex w-full items-center justify-between gap-2 rounded-lg border border-primary-100 px-3 py-2 text-sm text-primary-700 hover:bg-primary-50"
                       >
                         <span dir="ltr" className="truncate">{file.storage_path.split('/').pop()}</span>
                         <span className="flex items-center gap-2">
                           <span className="text-xs text-slateGray" dir="ltr">{formatBytes(file.size_bytes)}</span>
                           <Download className="h-4 w-4" />
                         </span>
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>

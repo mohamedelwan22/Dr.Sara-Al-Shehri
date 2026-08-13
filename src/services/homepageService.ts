@@ -5,7 +5,6 @@ import type { ResearchPaper } from '@/types';
 export interface HomeStats {
   total_views: number;
   total_downloads: number;
-  total_users: number;
   published_research: number;
 }
 
@@ -41,7 +40,6 @@ export const homepageService = {
     return {
       total_views: typeof raw.total_views === 'number' ? raw.total_views : 0,
       total_downloads: typeof raw.total_downloads === 'number' ? raw.total_downloads : 0,
-      total_users: typeof raw.total_users === 'number' ? raw.total_users : 0,
       published_research:
         typeof raw.published_research === 'number' ? raw.published_research : 0,
     };

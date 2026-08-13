@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase';
+import { assertAdmin } from '@/lib/adminGuard';
 import { shouldStampPublishedAt } from '@/lib/content';
 import type {
   AuditLog,
@@ -101,6 +102,7 @@ export const adminContentService = {
   },
 
   async create<T>(entity: string, payload: Record<string, unknown>): Promise<T> {
+    await assertAdmin();
     const { table } = ADMIN_ENTITY_MAP[entity];
     if (!table) throw new Error(`unknown-admin-entity:${entity}`);
     const body = { ...payload };
@@ -121,6 +123,7 @@ export const adminContentService = {
     id: string,
     payload: Record<string, unknown>,
   ): Promise<T> {
+    await assertAdmin();
     const { table } = ADMIN_ENTITY_MAP[entity];
     if (!table) throw new Error(`unknown-admin-entity:${entity}`);
     const body = { ...payload };
@@ -145,6 +148,7 @@ export const adminContentService = {
   },
 
   async remove(entity: string, id: string): Promise<void> {
+    await assertAdmin();
     const { table } = ADMIN_ENTITY_MAP[entity];
     if (!table) throw new Error(`unknown-admin-entity:${entity}`);
     const { error } = await requireSupabase().from(table).delete().eq('id', id);
@@ -153,6 +157,7 @@ export const adminContentService = {
 
   /** استبدال ارتباطات المحاور لعنصر (حذف ثم إدراج) — نفس النتيجة بدون تكرار. */
   async replaceAxisLinks(contentType: AxisContentType, contentId: string, axisIds: string[]) {
+    await assertAdmin();
     const client = requireSupabase();
     const { error: delError } = await client
       .from('content_axis_links')
@@ -225,6 +230,7 @@ export const adminContentService = {
   },
 
   async setUserRole(userId: string, role: 'admin' | 'user') {
+    await assertAdmin();
     const { data: existing } = await requireSupabase()
       .from('user_roles')
       .select('user_id')
@@ -272,6 +278,7 @@ export const adminContentService = {
   },
 
   async updateSubmissionStatus(id: string, status: ContactSubmission['status']) {
+    await assertAdmin();
     const { error } = await requireSupabase()
       .from('contact_submissions')
       .update({ status })
@@ -280,6 +287,7 @@ export const adminContentService = {
   },
 
   async updateSubmissionNotes(id: string, internal_notes: string) {
+    await assertAdmin();
     const { error } = await requireSupabase()
       .from('contact_submissions')
       .update({ internal_notes })
@@ -307,6 +315,7 @@ export const adminContentService = {
   },
 
   async upsertSetting(key: string, value: Record<string, unknown>, isPublic = true) {
+    await assertAdmin();
     const { data, error } = await requireSupabase()
       .from('site_settings')
       .upsert({ key, value, is_public: isPublic }, { onConflict: 'key' })
@@ -327,12 +336,14 @@ export const adminContentService = {
   },
 
   async registerMedia(row: Pick<Media, 'bucket' | 'storage_path' | 'mime_type' | 'size_bytes' | 'alt_ar' | 'alt_en'>) {
+    await assertAdmin();
     const { data, error } = await requireSupabase().from('media').insert(row).select('*').single();
     if (error) throw error;
     return data as Media;
   },
 
   async uploadMedia(file: File, bucket = 'public-media'): Promise<Media> {
+    await assertAdmin();
     const path = `admin/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-')}`;
     const { error: uploadError } = await requireSupabase().storage.from(bucket).upload(path, file, {
       contentType: file.type,
@@ -350,6 +361,7 @@ export const adminContentService = {
   },
 
   async deleteMedia(id: string, bucket: string, storagePath: string) {
+    await assertAdmin();
     const { error: storageError } = await requireSupabase().storage.from(bucket).remove([storagePath]);
     if (storageError) throw storageError;
     const { error } = await requireSupabase().from('media').delete().eq('id', id);
@@ -387,6 +399,7 @@ export const adminContentService = {
     section: string,
     payload: { title_ar?: string; title_en?: string; body_ar?: string; body_en?: string; status?: string },
   ) {
+    await assertAdmin();
     const { data, error } = await requireSupabase()
       .from('profile_content')
       .upsert({ section, ...payload }, { onConflict: 'section' })
