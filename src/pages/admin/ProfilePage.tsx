@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { UserRound } from 'lucide-react';
 import { adminContentService } from '@/services';
 import { invalidateProfileContent } from '@/services/queryInvalidation';
+import { profileSectionSchema, PROFILE_SECTION_KEYS, type ProfileSectionValues } from '@/schemas/content';
 import { Button } from '@/components/ui';
 import { Input, Textarea, Select } from '@/components/ui';
 import { FieldWrapper } from '@/components/ui';
@@ -11,19 +14,11 @@ import { LoadingState, ErrorState } from '@/components/ui';
 import { useToast } from '@/components/ui';
 import type { ProfileContent } from '@/types';
 
-const SECTIONS = ['biography', 'mission', 'interests'] as const;
+const SECTIONS = PROFILE_SECTION_KEYS;
 const STATUS_OPTIONS = [
   { value: 'published', labelKey: 'common.published' },
   { value: 'draft', labelKey: 'common.draft' },
 ];
-
-interface SectionForm {
-  title_ar: string;
-  title_en: string;
-  body_ar: string;
-  body_en: string;
-  status: string;
-}
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -78,71 +73,82 @@ function SectionEditor({
   initial,
   toast,
 }: {
-  section: string;
+  section: (typeof PROFILE_SECTION_KEYS)[number];
   initial?: ProfileContent;
   toast: ReturnType<typeof useToast>;
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<SectionForm>({
-    title_ar: initial?.title_ar ?? '',
-    title_en: initial?.title_en ?? '',
-    body_ar: initial?.body_ar ?? '',
-    body_en: initial?.body_en ?? '',
-    status: initial?.status ?? 'published',
+
+  const form = useForm<ProfileSectionValues>({
+    resolver: zodResolver(profileSectionSchema),
+    defaultValues: sectionValues(section, initial),
   });
 
+  const { register, handleSubmit, reset, formState } = form;
+
   useEffect(() => {
-    setForm({
-      title_ar: initial?.title_ar ?? '',
-      title_en: initial?.title_en ?? '',
-      body_ar: initial?.body_ar ?? '',
-      body_en: initial?.body_en ?? '',
-      status: initial?.status ?? 'published',
-    });
-  }, [initial]);
+    reset(sectionValues(section, initial));
+  }, [section, initial, reset]);
 
-  const set = (key: keyof SectionForm) => (value: string) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
-
-  const handleSave = async () => {
+  const handleSave = handleSubmit(async (values) => {
     try {
-      await adminContentService.upsertProfileSection(section, form);
+      await adminContentService.upsertProfileSection(section, {
+        title_ar: values.title_ar || undefined,
+        title_en: values.title_en || undefined,
+        body_ar: values.body_ar,
+        body_en: values.body_en || undefined,
+        status: values.status,
+      });
       invalidateProfileContent(queryClient);
       toast.success(t('common.saved'));
     } catch {
       toast.error(t('errors.generic'));
     }
-  };
+  });
 
   return (
-    <section className="rounded-xl2 border border-primary-100 bg-white p-5">
+    <form
+      onSubmit={(e) => void handleSave(e)}
+      className="rounded-xl2 border border-primary-100 bg-white p-5"
+      noValidate
+    >
       <h2 className="mb-4 font-display text-lg font-bold text-primary-900">
         {t(`admin.sections.${section}`)}
       </h2>
       <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-        <FieldWrapper label={t('admin.fields.title_ar')}>
-          <Input value={form.title_ar} onChange={(e) => set('title_ar')(e.target.value)} />
-        </FieldWrapper>
-        <FieldWrapper label={t('admin.fields.title_en')}>
-          <Input value={form.title_en} onChange={(e) => set('title_en')(e.target.value)} />
-        </FieldWrapper>
-        <FieldWrapper label={t('admin.fields.body_ar')}>
-          <Textarea
-            value={form.body_ar}
-            onChange={(e) => set('body_ar')(e.target.value)}
-            rows={6}
+        <FieldWrapper label={t('admin.fields.title_ar')} error={formState.errors.title_ar?.message} id={`${section}-title-ar`}>
+          <Input
+            id={`${section}-title-ar`}
+            {...register('title_ar')}
+            error={Boolean(formState.errors.title_ar)}
           />
         </FieldWrapper>
-        <FieldWrapper label={t('admin.fields.body_en')}>
+        <FieldWrapper label={t('admin.fields.title_en')} error={formState.errors.title_en?.message} id={`${section}-title-en`}>
+          <Input
+            id={`${section}-title-en`}
+            {...register('title_en')}
+            error={Boolean(formState.errors.title_en)}
+          />
+        </FieldWrapper>
+        <FieldWrapper label={t('admin.fields.body_ar')} error={formState.errors.body_ar?.message} id={`${section}-body-ar`}>
           <Textarea
-            value={form.body_en}
-            onChange={(e) => set('body_en')(e.target.value)}
+            id={`${section}-body-ar`}
+            {...register('body_ar')}
             rows={6}
+            error={Boolean(formState.errors.body_ar)}
+          />
+        </FieldWrapper>
+        <FieldWrapper label={t('admin.fields.body_en')} error={formState.errors.body_en?.message} id={`${section}-body-en`}>
+          <Textarea
+            id={`${section}-body-en`}
+            {...register('body_en')}
+            rows={6}
+            error={Boolean(formState.errors.body_en)}
           />
         </FieldWrapper>
         <FieldWrapper label={t('common.status')}>
-          <Select value={form.status} onChange={(e) => set('status')(e.target.value)}>
+          <Select {...register('status')}>
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {t(option.labelKey)}
@@ -152,8 +158,22 @@ function SectionEditor({
         </FieldWrapper>
       </div>
       <div className="mt-4 flex justify-end">
-        <Button onClick={() => void handleSave()}>{t('common.save')}</Button>
+        <Button type="submit">{t('common.save')}</Button>
       </div>
-    </section>
+    </form>
   );
+}
+
+function sectionValues(
+  section: (typeof PROFILE_SECTION_KEYS)[number],
+  initial?: ProfileContent,
+): ProfileSectionValues {
+  return {
+    section,
+    title_ar: initial?.title_ar ?? '',
+    title_en: initial?.title_en ?? '',
+    body_ar: initial?.body_ar ?? '',
+    body_en: initial?.body_en ?? '',
+    status: (initial?.status as ProfileSectionValues['status']) ?? 'published',
+  };
 }

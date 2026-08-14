@@ -14,6 +14,7 @@ export const PUBLISHABLE_TABLES = new Set<string>([
   'lectures',
   'scientific_insights',
   'news',
+  'profile_content',
 ]);
 
 /**

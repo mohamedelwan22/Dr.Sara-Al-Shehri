@@ -35,6 +35,7 @@ const INVALIDATIONS: Record<string, readonly (readonly string[])[]> = {
   news: [['news']],
   interests: [['interests']],
   calendar: [CALENDAR],
+  announcements: [['announcements']],
 };
 
 export function invalidateForEntity(queryClient: QueryClient, entity: string): void {

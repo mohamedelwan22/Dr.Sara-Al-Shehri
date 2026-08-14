@@ -18,6 +18,7 @@ import {
   Newspaper,
   Sparkles,
   CalendarDays,
+  Megaphone,
   Microscope,
   LogOut,
   ArrowRight,
@@ -45,6 +46,7 @@ const CONTENT_LINKS = [
   { to: '/admin/interests', key: 'admin.entities.interests', icon: Microscope },
   { to: '/admin/news', key: 'admin.entities.news', icon: Newspaper },
   { to: '/admin/insights', key: 'admin.entities.insights', icon: Sparkles },
+  { to: '/admin/announcements', key: 'admin.entities.announcements', icon: Megaphone },
   { to: '/admin/calendar', key: 'admin.entities.calendar', icon: CalendarDays },
 ];
 

@@ -50,6 +50,7 @@ const AdminUsersPage = lazy(() => import('@/pages/admin/UsersPage').then((m) => 
 const AdminMediaPage = lazy(() => import('@/pages/admin/MediaPage').then((m) => ({ default: m.MediaPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const AdminProfilePage = lazy(() => import('@/pages/admin/ProfilePage').then((m) => ({ default: m.ProfilePage })));
+const AdminAnnouncementsPage = lazy(() => import('@/pages/admin/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage })));
 
 function withSuspense(node: React.ReactNode) {
   return <Suspense fallback={<LoadingState />}>{node}</Suspense>;
@@ -116,6 +117,7 @@ export function App() {
           >
             <Route index element={withSuspense(<AdminDashboardPage />)} />
             <Route path="profile" element={withSuspense(<AdminProfilePage />)} />
+            <Route path="announcements" element={withSuspense(<AdminAnnouncementsPage />)} />
             <Route path=":entity" element={withSuspense(<AdminEntityListPage />)} />
             <Route path=":entity/new" element={withSuspense(<AdminEntityFormPage />)} />
             <Route path=":entity/:id/edit" element={withSuspense(<AdminEntityFormPage />)} />

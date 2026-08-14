@@ -8,6 +8,7 @@ import {
   axisSchema,
   interestSchema,
   calendarEventSchema,
+  announcementSchema,
 } from '@/schemas/content';
 import { ADMIN_ENTITY_MAP } from '@/services';
 import type { AxisContentType } from '@/types';
@@ -274,6 +275,22 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'ends_at', kind: 'text', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.isoHint', half: true },
       ...langFields('admin.fields', 'location'),
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
+    ],
+  },
+  announcements: {
+    entity: 'announcements',
+    schema: announcementSchema,
+    titleField: 'title_ar',
+    displayField: 'title',
+    fields: [
+      { key: 'title_ar', kind: 'text', labelKey: 'admin.fields.title_ar', half: true },
+      { key: 'title_en', kind: 'text', labelKey: 'admin.fields.title_en', half: true },
+      { key: 'link_url', kind: 'text', labelKey: 'admin.fields.link_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'icon', kind: 'text', labelKey: 'admin.fields.icon', hintKey: 'admin.fields.iconHint', half: true },
+      { key: 'active_from', kind: 'text', labelKey: 'admin.fields.active_from', hintKey: 'admin.fields.isoHint', half: true },
+      { key: 'active_until', kind: 'text', labelKey: 'admin.fields.active_until', hintKey: 'admin.fields.isoHint', half: true },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'is_active', kind: 'boolean', labelKey: 'admin.fields.is_active' },
     ],
   },
 };

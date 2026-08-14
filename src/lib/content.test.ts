@@ -37,11 +37,13 @@ describe('shouldStampPublishedAt', () => {
     expect(shouldStampPublishedAt('research_papers', 'published', null)).toBe(true);
     expect(shouldStampPublishedAt('news', 'published', undefined)).toBe(true);
     expect(shouldStampPublishedAt('scientific_supervisions', 'published', '')).toBe(true);
+    expect(shouldStampPublishedAt('profile_content', 'published', null)).toBe(true);
   });
 
   it('لا يختم جدولًا لا يملك عمود published_at', () => {
     expect(shouldStampPublishedAt('calendar_events', 'published', null)).toBe(false);
     expect(shouldStampPublishedAt('scientific_axes', 'published', null)).toBe(false);
+    expect(shouldStampPublishedAt('announcements', 'published', null)).toBe(false);
   });
 
   it('لا يختم ما لم تكن الحالة published', () => {

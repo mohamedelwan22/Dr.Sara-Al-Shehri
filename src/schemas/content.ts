@@ -124,6 +124,25 @@ export const profileContentSchema = z.object({
   status: contentStatusSchema.default('published'),
 });
 
+export const PROFILE_SECTION_KEYS = ['biography', 'mission', 'interests', 'privacy', 'terms'] as const;
+
+/**
+ * مخطط تحرير أقسام السيرة في لوحة الإدارة.
+ * body_ar مطلوب (المحتوى الفعلي للقسم)، وحدود الطول متوافقة مع
+ * القيود الفعلية في profile_content (text).
+ */
+export const profileSectionSchema = z.object({
+  section: z.enum(PROFILE_SECTION_KEYS),
+  title_ar: z.string().max(300).optional().or(z.literal('')),
+  title_en: z.string().max(300).optional().or(z.literal('')),
+  body_ar: z.string().min(1, { message: 'fieldRequired' }).max(100000),
+  body_en: z.string().max(100000).optional().or(z.literal('')),
+  status: contentStatusSchema.default('published'),
+});
+
+export type ProfileContentValues = z.infer<typeof profileContentSchema>;
+export type ProfileSectionValues = z.infer<typeof profileSectionSchema>;
+
 export type ResearchPaperValues = z.infer<typeof researchPaperSchema>;
 export type SupervisionValues = z.infer<typeof supervisionSchema>;
 export type ProjectValues = z.infer<typeof projectSchema>;
@@ -133,4 +152,3 @@ export type AxisValues = z.infer<typeof axisSchema>;
 export type InterestValues = z.infer<typeof interestSchema>;
 export type AnnouncementValues = z.infer<typeof announcementSchema>;
 export type CalendarEventValues = z.infer<typeof calendarEventSchema>;
-export type ProfileContentValues = z.infer<typeof profileContentSchema>;

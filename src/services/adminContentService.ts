@@ -2,6 +2,7 @@ import { requireSupabase } from '@/lib/supabase';
 import { assertAdmin } from '@/lib/adminGuard';
 import { shouldStampPublishedAt } from '@/lib/content';
 import type {
+  Announcement,
   AuditLog,
   ContactSubmission,
   Media,
@@ -42,6 +43,7 @@ export const ADMIN_ENTITY_MAP: Record<string, { table: string; axisType?: AxisCo
   news: { table: 'news' },
   interests: { table: 'research_interests' },
   calendar: { table: 'calendar_events' },
+  announcements: { table: 'announcements' },
 };
 
 const SEARCHABLE_TITLE: Record<string, string> = {
@@ -57,6 +59,7 @@ const SEARCHABLE_TITLE: Record<string, string> = {
   news: 'title_ar',
   research_interests: 'title_ar',
   calendar_events: 'title_ar',
+  announcements: 'title_ar',
 };
 
 export const adminContentService = {
@@ -397,15 +400,54 @@ export const adminContentService = {
 
   async upsertProfileSection(
     section: string,
-    payload: { title_ar?: string; title_en?: string; body_ar?: string; body_en?: string; status?: string },
+    payload: {
+      title_ar?: string;
+      title_en?: string;
+      body_ar?: string;
+      body_en?: string;
+      status?: string;
+      published_at?: string | null;
+    },
   ) {
     await assertAdmin();
-    const { data, error } = await requireSupabase()
+    const client = requireSupabase();
+    const body: Record<string, unknown> = { section, ...payload };
+
+    // الحفاظ على published_at عند النشر (نفس منطق بقية جداول المحتوى).
+    if (shouldStampPublishedAt('profile_content', payload.status, payload.published_at)) {
+      const { data: existing } = await client
+        .from('profile_content')
+        .select('published_at')
+        .eq('section', section)
+        .maybeSingle();
+      if (
+        existing &&
+        shouldStampPublishedAt('profile_content', payload.status, (existing as { published_at?: unknown }).published_at)
+      ) {
+        body.published_at = new Date().toISOString();
+      }
+    }
+
+    const { data, error } = await client
       .from('profile_content')
-      .upsert({ section, ...payload }, { onConflict: 'section' })
+      .upsert(body, { onConflict: 'section' })
       .select('*')
       .single();
     if (error) throw error;
     return data;
+  },
+
+  // ============ الإعلانات ============
+  /** نشر / إلغاء نشر إعلان (is_active) — بأذونات أدمن معزّزة. */
+  async setAnnouncementActive(id: string, isActive: boolean): Promise<Announcement> {
+    await assertAdmin();
+    const { data, error } = await requireSupabase()
+      .from('announcements')
+      .update({ is_active: isActive })
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return data as Announcement;
   },
 };
