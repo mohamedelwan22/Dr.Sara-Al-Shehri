@@ -110,7 +110,7 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-ivory">
+    <div className="flex min-h-screen flex-col bg-ivory -mb-16">
       {/* الشريط العلوي */}
       <header className="sticky top-0 z-40 border-b border-primary-800 bg-primary-900">
         <div className="flex h-14 items-center justify-between px-4 sm:px-6">
@@ -142,12 +142,12 @@ export function AdminLayout() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1 items-start">
         {/* الشريط الجانبي */}
         <aside
           className={cn(
             'w-64 shrink-0 overflow-y-auto bg-primary-900 py-6',
-            'fixed inset-y-0 right-0 z-30 pt-14 transition-transform lg:static lg:pt-6 lg:translate-x-0',
+            'fixed inset-y-0 right-0 z-30 pt-14 transition-transform lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:self-start lg:pt-6 lg:translate-x-0',
             open ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
           )}
         >
