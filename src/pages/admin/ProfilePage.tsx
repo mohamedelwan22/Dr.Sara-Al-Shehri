@@ -12,6 +12,7 @@ import { Input, Textarea, Select } from '@/components/ui';
 import { FieldWrapper } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/ui';
 import { useToast } from '@/components/ui';
+import { ResearchInterestsEditor } from './ResearchInterestsEditor';
 import type { ProfileContent } from '@/types';
 
 const SECTIONS = PROFILE_SECTION_KEYS;
@@ -64,6 +65,8 @@ export function ProfilePage() {
           />
         ))}
       </div>
+
+      <ResearchInterestsEditor />
     </div>
   );
 }

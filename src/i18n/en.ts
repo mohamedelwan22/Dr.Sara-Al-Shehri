@@ -449,6 +449,10 @@ export const en = {
     uploaded: 'File uploaded',
     fileTooLarge: 'File is larger than 15 MB',
     profileHint: 'Manage the content of sections shown on public pages (biography, mission, interests, privacy policy, terms of use).',
+    interestsList: 'Research interests list',
+    interestsListHint: 'Manage the cards shown on the public research interests page.',
+    addInterest: 'Add research interest',
+    noInterests: 'No research interests yet.',
     sections: {
       biography: 'Biography',
       mission: 'Mission',

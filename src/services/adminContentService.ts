@@ -7,6 +7,7 @@ import type {
   ContactSubmission,
   Media,
   Profile,
+  ResearchInterest,
   SiteSetting,
   UserRole,
   AxisContentType,
@@ -435,6 +436,17 @@ export const adminContentService = {
       .single();
     if (error) throw error;
     return data;
+  },
+
+  // ============ الاهتمامات البحثية (محرر ملف السيرة) ============
+  /** قائمة اهتمامات البحثية بكل الحالات، مرتّبة بترتيب العرض العام (sort_order). */
+  async listInterests(): Promise<ResearchInterest[]> {
+    const { data, error } = await requireSupabase()
+      .from('research_interests')
+      .select('*')
+      .order('sort_order', { ascending: true, nullsFirst: true });
+    if (error) throw error;
+    return (data as ResearchInterest[]) ?? [];
   },
 
   // ============ الإعلانات ============
