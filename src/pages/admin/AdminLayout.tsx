@@ -123,6 +123,7 @@ export function AdminLayout() {
             >
               <Menu className="h-5 w-5" />
             </button>
+            <img src="/images/logo.png" alt="" className="h-9 w-9 shrink-0 object-contain" />
             <p className="font-display text-lg font-bold text-white">{t('admin.title')}</p>
           </div>
           <div className="flex items-center gap-2">
