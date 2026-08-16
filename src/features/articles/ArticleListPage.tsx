@@ -8,6 +8,7 @@ import { Seo } from '@/components/layout/Seo';
 import { newsService, queryKeys } from '@/services';
 import { Card, CardBody, CardTitle, SkeletonGrid, ErrorState, EmptyState, Pagination } from '@/components/ui';
 import { pickLang, formatDate } from '@/lib/utils';
+import { FavoriteButton } from '@/features/interactions/FavoriteButton';
 import type { News } from '@/types';
 
 export function ArticleListPage({
@@ -60,10 +61,13 @@ export function ArticleListPage({
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <span className="flex items-center gap-1 text-xs font-bold text-slateGray">
-                        <CalendarDays className="h-3.5 w-3.5" />
-                        {formatDate(item.published_at, locale)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-xs font-bold text-slateGray">
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          {formatDate(item.published_at, locale)}
+                        </span>
+                        <FavoriteButton contentType={kind} contentId={item.id} />
+                      </div>
                     </div>
                     <CardTitle className="mb-2 line-clamp-2">
                       <Link to={`/${prefix}/${item.slug}`} className="transition-colors hover:text-primary-600">

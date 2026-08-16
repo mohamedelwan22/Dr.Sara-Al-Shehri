@@ -27,7 +27,7 @@ export function SignUpPage() {
         toast.success(t('auth.welcome'));
         navigate(next, { replace: true });
       } else {
-        toast.success(t('auth.resetSent'));
+        toast.success(t('auth.confirmationSent'));
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : '';

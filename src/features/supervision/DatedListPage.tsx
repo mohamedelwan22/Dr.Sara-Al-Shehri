@@ -7,6 +7,7 @@ import { Seo } from '@/components/layout/Seo';
 import { supervisionService, queryKeys } from '@/services';
 import { Card, CardBody, CardTitle, Badge, SkeletonGrid, ErrorState, EmptyState, Pagination } from '@/components/ui';
 import { pickLang, formatDate } from '@/lib/utils';
+import { FavoriteButton } from '@/features/interactions/FavoriteButton';
 import type { ScientificSupervision } from '@/types';
 
 export function DatedListPage({
@@ -15,6 +16,7 @@ export function DatedListPage({
   subtitleKey,
   emptyKey,
   detailPrefix,
+  contentType,
   seoTitleKey,
 }: {
   listFn: typeof supervisionService.listSupervision;
@@ -22,6 +24,7 @@ export function DatedListPage({
   subtitleKey: string;
   emptyKey: string;
   detailPrefix: string;
+  contentType: string;
   seoTitleKey: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -56,6 +59,7 @@ export function DatedListPage({
                   item={item as ScientificSupervision}
                   locale={locale}
                   detailPrefix={detailPrefix}
+                  contentType={contentType}
                 />
               ))}
             </div>
@@ -84,10 +88,12 @@ function DatedCard({
   item,
   locale,
   detailPrefix,
+  contentType,
 }: {
   item: ScientificSupervision;
   locale: 'ar' | 'en';
   detailPrefix: string;
+  contentType: string;
 }) {
   const { t } = useTranslation();
   const researcher = pickLang(item.researcher_ar, item.researcher_en, locale);
@@ -97,12 +103,15 @@ function DatedCard({
       <CardBody className="flex flex-1 flex-col">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <Badge tone="gold">{pickLang(item.degree ?? t('common.unknown'), null, locale)}</Badge>
-          {item.completion_date && (
-            <span className="flex items-center gap-1 text-xs font-bold text-slateGray">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {formatDate(item.completion_date, locale)}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {item.completion_date && (
+              <span className="flex items-center gap-1 text-xs font-bold text-slateGray">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {formatDate(item.completion_date, locale)}
+              </span>
+            )}
+            <FavoriteButton contentType={contentType} contentId={item.id} />
+          </div>
         </div>
         <CardTitle className="mb-2 line-clamp-2 min-h-[3.5rem]">
           <Link to={`/${detailPrefix}/${item.slug}`} className="transition-colors hover:text-primary-600">

@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, CalendarDays, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, MapPin, Clock, ExternalLink } from 'lucide-react';
 import { Seo } from '@/components/layout/Seo';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { calendarService, queryKeys } from '@/services';
 import { ErrorState, LoadingState, Badge } from '@/components/ui';
-import { pickLang, cn } from '@/lib/utils';
+import { pickLang, cn, formatTime } from '@/lib/utils';
 import type { CalendarEvent } from '@/types';
 
 const EVENT_TONES: Record<string, 'primary' | 'gold' | 'green' | 'red' | 'gray' | 'ivory'> = {
@@ -170,22 +170,50 @@ export function CalendarPage() {
                         key={event.id}
                         className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary-100 bg-white px-4 py-3"
                       >
-                        <div className="flex items-center gap-3">
-                          <Badge tone={EVENT_TONES[event.event_type] ?? 'gray'}>
-                            {t(`calendar.eventType.${event.event_type}`)}
-                          </Badge>
-                          <span className="text-sm font-bold text-primary-900">
-                            {pickLang(event.title_ar, event.title_en, locale)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-slateGray">
-                          {event.location_ar && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5" />
-                              {pickLang(event.location_ar, event.location_en, locale)}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge tone={EVENT_TONES[event.event_type] ?? 'gray'}>
+                              {t(`calendar.eventType.${event.event_type}`)}
+                            </Badge>
+                            <span className="text-sm font-bold text-primary-900">
+                              {pickLang(event.title_ar, event.title_en, locale)}
                             </span>
-                          )}
-                          <span>{new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en-GB', { day: 'numeric', month: 'long' }).format(new Date(`${day.date}T00:00:00`))}</span>
+                            {event.link_url && (
+                              <a
+                                href={event.link_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs font-bold text-primary-600 hover:text-primary-800"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                {t('calendar.openLink')}
+                              </a>
+                            )}
+                          </div>
+                          {(() => {
+                            const description = pickLang(event.description_ar, event.description_en, locale);
+                            return description ? (
+                              <p className="mt-1 line-clamp-2 text-sm text-slateGray-dark">{description}</p>
+                            ) : null;
+                          })()}
+                          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slateGray">
+                            {event.starts_at && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3.5 w-3.5" />
+                                {formatTime(event.starts_at, locale)}
+                                {event.ends_at ? ` — ${formatTime(event.ends_at, locale)}` : ''}
+                              </span>
+                            )}
+                            {event.location_ar && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {pickLang(event.location_ar, event.location_en, locale)}
+                              </span>
+                            )}
+                            <span>
+                              {new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en-GB', { day: 'numeric', month: 'long' }).format(new Date(`${day.date}T00:00:00`))}
+                            </span>
+                          </div>
                         </div>
                       </li>
                     )),

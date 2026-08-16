@@ -10,6 +10,7 @@ export function SupervisionPage() {
       subtitleKey="supervision.subtitle"
       emptyKey="supervision.noItems"
       detailPrefix="supervision"
+      contentType="supervision"
       seoTitleKey="supervision.title"
     />
   );

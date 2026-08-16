@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarRange, Lightbulb } from 'lucide-react';
 import { Card, CardBody, CardTitle, Badge } from '@/components/ui';
 import { pickLang, formatMonthYear } from '@/lib/utils';
 import { AxisTagsForItems } from '@/features/scientific-map/AxisTags';
+import { FavoriteButton } from '@/features/interactions/FavoriteButton';
 import type { ResearchProject } from '@/types';
 
 export function ProjectCard({
@@ -24,7 +25,10 @@ export function ProjectCard({
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary-100 text-primary-600">
             <Lightbulb className="h-6 w-6" />
           </div>
-          {project.project_status && <Badge tone="gold">{project.project_status}</Badge>}
+          <div className="flex items-center gap-2">
+            {project.project_status && <Badge tone="gold">{project.project_status}</Badge>}
+            <FavoriteButton contentType="project" contentId={project.id} />
+          </div>
         </div>
 
         <CardTitle className="mb-2 line-clamp-2 min-h-[3.5rem]">

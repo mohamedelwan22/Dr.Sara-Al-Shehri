@@ -51,6 +51,20 @@ export function formatMonthYear(
   }
 }
 
+export function formatTime(
+  value: string | Date | null | undefined,
+  locale = 'ar',
+): string {
+  if (!value) return '';
+  try {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en-GB', {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(new Date(value));
+  } catch {
+    return '';
+  }
+}
 export function formatNumber(value: number, locale = 'ar'): string {
   if (value == null || Number.isNaN(value)) return '0';
   return new Intl.NumberFormat(locale === 'ar' ? 'ar-SA' : 'en-US', {

@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FileText, Loader2, Trash2, Upload } from 'lucide-react';
 import { adminContentService } from '@/services';
 import { queryKeys } from '@/services/queryKeys';
 import { invalidateForEntity } from '@/services/queryInvalidation';
@@ -15,6 +15,16 @@ import { FieldWrapper } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/ui';
 import { useToast } from '@/components/ui';
 import { slugify } from '@/lib/utils';
+import {
+  contentFilePreviewUrl,
+  fileDisplayName,
+  isImageStoragePath,
+  isPublicBucket,
+  removeStoredFile,
+  splitStoragePath,
+  uploadContentFile,
+  validateContentFile,
+} from '@/lib/storageFiles';
 
 type Row = Record<string, unknown>;
 
@@ -79,8 +89,8 @@ export function EntityFormPage() {
       const body = { ...payload };
       delete body.axisIds;
       for (const field of config?.fields ?? []) {
-        if (field.kind === 'number' || field.kind === 'date') {
-          body[field.key] = (body[field.key] as string | null | undefined) ?? null;
+        if (field.kind === 'number' || field.kind === 'date' || field.kind === 'datetime') {
+          body[field.key] = normalizeTimestamp(body[field.key]);
         }
       }
       const result = isEdit
@@ -147,6 +157,7 @@ export function EntityFormPage() {
               field={field}
               register={register}
               setValue={setValue}
+              value={watch(field.key)}
               axisIds={axisIds ?? []}
               axes={axesQuery.data ?? []}
               error={formState.errors[field.key]?.message as string | undefined}
@@ -177,6 +188,7 @@ function FormField({
   field,
   register,
   setValue,
+  value,
   axisIds,
   axes,
   error,
@@ -185,6 +197,7 @@ function FormField({
   field: FieldConfig;
   register: UseFormRegister<Row>;
   setValue: UseFormSetValue<Row>;
+  value?: unknown;
   axisIds: string[];
   axes: Row[];
   error?: string;
@@ -284,6 +297,39 @@ function FormField({
           />
         </FieldWrapper>
       );
+    case 'datetime':
+      return (
+        <FieldWrapper label={label} error={error} hint={hint} id={id}>
+          <Input
+            type="datetime-local"
+            {...register(key, { setValueAs: (v) => (v === '' ? undefined : v) })}
+            error={Boolean(error)}
+            {...common}
+          />
+        </FieldWrapper>
+      );
+    case 'url':
+      return (
+        <FieldWrapper label={label} error={error} hint={hint} id={id}>
+          <Input
+            dir="ltr"
+            inputMode="url"
+            placeholder="https://"
+            {...register(key, { setValueAs: (v) => (v === '' ? undefined : v) })}
+            error={Boolean(error)}
+            {...common}
+          />
+        </FieldWrapper>
+      );
+    case 'file':
+      return (
+        <FileField
+          field={field}
+          value={typeof value === 'string' ? value : ''}
+          onChange={(path) => setValue(field.key, path)}
+          error={error}
+        />
+      );
     case 'slug':
       return (
         <FieldWrapper label={label} error={error} hint={hint} id={id}>
@@ -318,7 +364,7 @@ function buildDefaults(fields: FieldConfig[]): Row {
   for (const field of fields) {
     if (field.kind === 'axes') defaults[field.key] = [];
     else if (field.kind === 'select') defaults[field.key] = field.options?.[0]?.value ?? '';
-    else if (field.kind === 'boolean') defaults[field.key] = false;
+    else if (field.kind === 'boolean') defaults[field.key] = true;
     else defaults[field.key] = '';
   }
   return defaults;
@@ -334,9 +380,130 @@ function buildValuesFromRow(fields: FieldConfig[], row: Row): Row {
       values[field.key] = raw == null ? '' : String(raw);
     } else if (field.kind === 'boolean') {
       values[field.key] = Boolean(raw);
+    } else if (field.kind === 'datetime') {
+      values[field.key] = typeof raw === 'string' && raw ? raw.slice(0, 16) : '';
     } else {
       values[field.key] = raw ?? '';
     }
   }
   return values;
+}
+
+/** تحويل قيمة datetime-local (YYYY-MM-DDTHH:mm) إلى ISO للتخزين، والفارغ إلى null. */
+function normalizeTimestamp(value: unknown): string | null {
+  if (value === '' || value == null) return null;
+  const raw = String(value);
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw) ? `${raw}:00` : raw;
+}
+
+function FileField({
+  field,
+  value,
+  onChange,
+  error,
+}: {
+  field: FieldConfig;
+  value: string;
+  onChange: (path: string) => void;
+  error?: string;
+}) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const bucket = field.bucket ?? 'public-media';
+  const id = `field-${field.key}`;
+  const label = t(field.labelKey);
+  const hint = field.hintKey ? t(field.hintKey) : undefined;
+  const storagePath = value;
+  const { bucket: valueBucket } = storagePath ? splitStoragePath(storagePath) : { bucket: '' };
+  const showPreview = storagePath && isImageStoragePath(storagePath) && isPublicBucket(valueBucket || bucket);
+  const previewUrl = storagePath && showPreview ? contentFilePreviewUrl(storagePath) : '';
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file || uploading) return;
+    const validationKey = validateContentFile(file, field.accept);
+    if (validationKey) {
+      toast.error(t(validationKey));
+      return;
+    }
+    setUploading(true);
+    try {
+      const result = await uploadContentFile(file, bucket);
+      if (storagePath) void removeStoredFile(storagePath);
+      onChange(result.storagePath);
+      toast.success(t('admin.uploadSuccess'));
+    } catch {
+      toast.error(t('admin.uploadFailed'));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  const handleRemove = () => {
+    if (storagePath) void removeStoredFile(storagePath);
+    onChange('');
+    toast.success(t('admin.fileRemoved'));
+  };
+
+  return (
+    <FieldWrapper label={label} error={error} hint={hint} id={id}>
+      {storagePath ? (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          {previewUrl ? (
+            <img src={previewUrl} alt="" className="h-14 w-14 rounded object-cover" />
+          ) : (
+            <span className="flex h-12 w-12 items-center justify-center rounded bg-white text-primary-600">
+              <FileText className="h-6 w-6" />
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-primary-900" dir="ltr" title={storagePath}>
+              {fileDisplayName(storagePath)}
+            </p>
+            <p className="text-xs text-slateGray" dir="ltr">
+              {storagePath}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+            onClick={handleRemove}
+          >
+            {t('admin.removeFile')}
+          </Button>
+        </div>
+      ) : (
+        <label
+          htmlFor={id}
+          className="flex min-h-20 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 text-sm font-medium text-slateGray transition-colors hover:border-primary-400 hover:text-primary-700"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {t('admin.upload')}…
+            </>
+          ) : (
+            <>
+              <Upload className="h-4 w-4" />
+              {t('admin.upload')}
+            </>
+          )}
+        </label>
+      )}
+      <input
+        ref={inputRef}
+        id={id}
+        type="file"
+        className="sr-only"
+        accept={field.accept}
+        disabled={uploading}
+        onChange={(e) => void handleFile(e.target.files?.[0])}
+      />
+    </FieldWrapper>
+  );
 }

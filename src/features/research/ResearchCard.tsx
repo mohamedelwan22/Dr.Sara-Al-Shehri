@@ -4,6 +4,7 @@ import { ArrowLeft, FileText } from 'lucide-react';
 import { Card, CardBody, CardTitle, Badge } from '@/components/ui';
 import { pickLang, formatDate } from '@/lib/utils';
 import { AxisTagsForItems } from '@/features/scientific-map/AxisTags';
+import { FavoriteButton } from '@/features/interactions/FavoriteButton';
 import type { ResearchPaper } from '@/types';
 
 export function ResearchCard({
@@ -29,11 +30,14 @@ export function ResearchCard({
             <FileText className="h-4 w-4 text-primary-400" />
             <Badge tone="primary">{paper.publication_year ?? t('common.unknown')}</Badge>
           </div>
-          {institution && (
-            <Badge tone="ivory" className="max-w-[55%] truncate">
-              {institution}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {institution && (
+              <Badge tone="ivory" className="max-w-[55%] truncate">
+                {institution}
+              </Badge>
+            )}
+            <FavoriteButton contentType={contentType} contentId={paper.id} />
+          </div>
         </div>
 
         <CardTitle className="mb-2 line-clamp-2 min-h-[3.5rem]">

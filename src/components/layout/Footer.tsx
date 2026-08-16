@@ -1,10 +1,21 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { Logo } from './Logo';
+import { SocialIcons } from '@/components/social/SocialIcons';
+import { settingsService } from '@/services/contentService';
+import { queryKeys } from '@/services/queryKeys';
 
 export function Footer() {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+
+  const socialLinksQuery = useQuery({
+    queryKey: queryKeys.settings('social_links'),
+    queryFn: () => settingsService.getSocialLinks(),
+    retry: 1,
+  });
+  const socialLinks = socialLinksQuery.data ?? {};
 
   const primary = [
     { to: '/', key: 'nav.home' },
@@ -49,6 +60,7 @@ export function Footer() {
           </Link>
           <p className="text-sm leading-relaxed text-slate-300">{t('footer.about')}</p>
           <p className="text-xs text-slate-400">{t('footer.university')}</p>
+          <SocialIcons links={socialLinks} itemClassName="h-8 w-8" />
         </div>
 
         <nav aria-label={t('footer.quickLinks')}>

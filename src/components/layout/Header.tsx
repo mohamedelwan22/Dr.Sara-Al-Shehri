@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import {
   Home,
   User,
@@ -14,8 +15,6 @@ import {
   X,
   Search,
   Mail,
-  Linkedin,
-  Youtube,
   Globe,
   LogOut,
   UserCircle2,
@@ -26,10 +25,14 @@ import {
   Map,
   Newspaper,
   Sparkles,
+  Heart,
 } from 'lucide-react';
 import { LogoMark } from './Logo';
+import { SocialIcons } from '@/components/social/SocialIcons';
 import { useAuth, useLocale } from '@/hooks/useAuth';
 import { authService } from '@/services/authService';
+import { settingsService } from '@/services/contentService';
+import { queryKeys } from '@/services/queryKeys';
 import { useToast } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -62,6 +65,14 @@ export function Header() {
   const toast = useToast();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [query, setQuery] = useState('');
+
+  const socialLinksQuery = useQuery({
+    queryKey: queryKeys.settings('social_links'),
+    queryFn: () => settingsService.getSocialLinks(),
+    retry: 1,
+  });
+  const socialLinks = socialLinksQuery.data ?? {};
+  const hasSocialLinks = Object.values(socialLinks).some((url) => Boolean(url));
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
@@ -101,33 +112,11 @@ export function Header() {
             </Link>
 
             {/* Social Icons */}
-            <div className="hidden xl:flex items-center gap-1.5 ms-3 border-s border-slate-200 ps-3">
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noreferrer"
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0077B5] text-white hover:opacity-90 transition-opacity"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-3.5 w-3.5" />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-900 text-white hover:bg-primary-800 transition-colors"
-                aria-label="YouTube"
-              >
-                <Youtube className="h-3.5 w-3.5" />
-              </a>
-              <a
-                href="mailto:info@example.com"
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-900 text-white hover:bg-primary-800 transition-colors"
-                aria-label="Email"
-              >
-                <Mail className="h-3.5 w-3.5" />
-              </a>
-            </div>
+            {hasSocialLinks && (
+              <div className="hidden xl:flex items-center gap-1.5 ms-3 border-s border-slate-200 ps-3">
+                <SocialIcons links={socialLinks} />
+              </div>
+            )}
           </div>
 
           {/* Search Bar (MIDDLE) */}
@@ -157,6 +146,15 @@ export function Header() {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/favorites')}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-gold-600 hover:bg-gold-50"
+                  aria-label={t('favorites.title')}
+                  title={t('favorites.title')}
+                >
+                  <Heart className="h-4 w-4" />
+                </button>
                 <button
                   type="button"
                   onClick={() => navigate(isAdmin ? '/admin' : '/account')}
@@ -274,17 +272,27 @@ export function Header() {
               </div>
             )}
             {isAuthenticated && (
-              <button
-                type="button"
-                onClick={() => {
-                  setDrawerOpen(false);
-                  void handleSignOut();
-                }}
-                className="flex w-full h-10 items-center justify-center gap-1.5 rounded-lg border border-red-200 text-xs font-bold text-red-600 mt-3"
-              >
-                <LogOut className="h-4 w-4" />
-                {t('auth.signOut')}
-              </button>
+              <>
+                <Link
+                  to="/favorites"
+                  onClick={() => setDrawerOpen(false)}
+                  className="flex w-full h-10 items-center justify-center gap-1.5 rounded-lg border border-gold-200 text-xs font-bold text-gold-700 mt-3"
+                >
+                  <Heart className="h-4 w-4" />
+                  {t('favorites.title')}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    void handleSignOut();
+                  }}
+                  className="flex w-full h-10 items-center justify-center gap-1.5 rounded-lg border border-red-200 text-xs font-bold text-red-600 mt-3"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t('auth.signOut')}
+                </button>
+              </>
             )}
             <button
               type="button"

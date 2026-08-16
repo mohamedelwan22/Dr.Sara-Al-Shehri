@@ -38,7 +38,9 @@ const ContactPage = lazy(() => import('@/pages/contact/ContactPage').then((m) =>
 const SignInPage = lazy(() => import('@/pages/auth/SignInPage').then((m) => ({ default: m.SignInPage })));
 const SignUpPage = lazy(() => import('@/pages/auth/SignUpPage').then((m) => ({ default: m.SignUpPage })));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })));
+const AuthCallbackPage = lazy(() => import('@/pages/auth/AuthCallbackPage').then((m) => ({ default: m.AuthCallbackPage })));
 const AccountPage = lazy(() => import('@/pages/account/AccountPage').then((m) => ({ default: m.AccountPage })));
+const FavoritesPage = lazy(() => import('@/pages/favorites/FavoritesPage').then((m) => ({ default: m.FavoritesPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
@@ -47,7 +49,6 @@ const AdminEntityListPage = lazy(() => import('@/pages/admin/EntityListPage').th
 const AdminEntityFormPage = lazy(() => import('@/pages/admin/EntityFormPage').then((m) => ({ default: m.EntityFormPage })));
 const AdminInboxPage = lazy(() => import('@/pages/admin/InboxPage').then((m) => ({ default: m.InboxPage })));
 const AdminUsersPage = lazy(() => import('@/pages/admin/UsersPage').then((m) => ({ default: m.UsersPage })));
-const AdminMediaPage = lazy(() => import('@/pages/admin/MediaPage').then((m) => ({ default: m.MediaPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const AdminProfilePage = lazy(() => import('@/pages/admin/ProfilePage').then((m) => ({ default: m.ProfilePage })));
 const AdminAnnouncementsPage = lazy(() => import('@/pages/admin/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage })));
@@ -97,12 +98,22 @@ export function App() {
           <Route path="/auth/sign-in" element={withSuspense(<SignInPage />)} />
           <Route path="/auth/sign-up" element={withSuspense(<SignUpPage />)} />
           <Route path="/auth/forgot-password" element={withSuspense(<ForgotPasswordPage />)} />
+          <Route path="/auth/callback" element={withSuspense(<AuthCallbackPage />)} />
 
           <Route
             path="/account"
             element={
               <RequireAuth>
-                {withSuspense(<AccountPage />)}
+                <AccountPage />
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/favorites"
+            element={
+              <RequireAuth>
+                <FavoritesPage />
               </RequireAuth>
             }
           />
@@ -123,7 +134,6 @@ export function App() {
             <Route path=":entity/:id/edit" element={withSuspense(<AdminEntityFormPage />)} />
             <Route path="inbox" element={withSuspense(<AdminInboxPage />)} />
             <Route path="users" element={withSuspense(<AdminUsersPage />)} />
-            <Route path="media" element={withSuspense(<AdminMediaPage />)} />
             <Route path="settings" element={withSuspense(<AdminSettingsPage />)} />
           </Route>
 

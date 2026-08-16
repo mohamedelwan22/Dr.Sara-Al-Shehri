@@ -293,14 +293,18 @@ export function HomePage() {
                   {announcements.map((ann) => {
                     const Icon = ANNOUNCEMENT_ICONS[ann.icon ?? ''] ?? Megaphone;
                     const title = pickLang(ann.title_ar, ann.title_en, locale);
+                    const body = pickLang(ann.body_ar, ann.body_en, locale);
                     const inner = (
                       <>
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#3C1B58] text-white">
                           <Icon className="h-4 w-4" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <h4 className="text-xs font-bold text-primary-950 leading-snug">{title}</h4>
-                          {ann.link_url && (
+                          {body && (
+                            <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-slate-500">{body}</p>
+                          )}
+                          {ann.link_url && !body && (
                             <p className="text-[10px] text-slate-500">{t('home.readMore')}</p>
                           )}
                         </div>

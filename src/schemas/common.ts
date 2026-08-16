@@ -39,6 +39,27 @@ export const urlSchema = z
   .nullable()
   .or(z.literal(''));
 
+/** رابط قابل للعرض: http(s) خارجي أو مسار داخلي يبدأ بـ / (للإعلانات والروابط الداخلية). */
+export const contentUrlSchema = z
+  .string()
+  .max(500)
+  .optional()
+  .nullable()
+  .or(z.literal(''))
+  .refine(
+    (value) => {
+      if (!value) return true;
+      if (value.startsWith('/')) return true;
+      try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    },
+    { message: 'invalidUrl' },
+  );
+
 export const isoDateSchema = z.string().refine(
   (value) => {
     if (!value) return true;

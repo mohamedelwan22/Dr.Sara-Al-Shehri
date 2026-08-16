@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { contentStatusSchema, slugSchema } from './common';
+import { contentStatusSchema, slugSchema, urlSchema, contentUrlSchema } from './common';
 
 const baseContent = {
   title_ar: z.string().min(1, { message: 'fieldRequired' }).max(500),
@@ -52,8 +52,14 @@ export const courseSchema = z.object({
   description_ar: z.string().max(20000).optional().or(z.literal('')),
   description_en: z.string().max(20000).optional().or(z.literal('')),
   activity_date: z.string().optional().nullable().or(z.literal('')),
+  ends_at: z.string().optional().nullable().or(z.literal('')),
   location_ar: z.string().max(300).optional().or(z.literal('')),
   location_en: z.string().max(300).optional().or(z.literal('')),
+  registration_url: urlSchema,
+  meeting_url: urlSchema,
+  video_url: urlSchema,
+  image_path: z.string().max(500).optional().nullable().or(z.literal('')),
+  materials_path: z.string().max(500).optional().nullable().or(z.literal('')),
   axisIds: z.array(z.string()).default([]),
 });
 
@@ -89,12 +95,9 @@ export const interestSchema = z.object({
 export const announcementSchema = z.object({
   title_ar: z.string().min(1, { message: 'fieldRequired' }).max(300),
   title_en: z.string().max(300).optional().or(z.literal('')),
-  link_url: z
-    .string()
-    .max(500)
-    .optional()
-    .or(z.literal(''))
-    .refine((v) => !v || /^https?:\/\//.test(v), { message: 'invalidUrl' }),
+  body_ar: z.string().max(5000).optional().or(z.literal('')),
+  body_en: z.string().max(5000).optional().or(z.literal('')),
+  link_url: contentUrlSchema,
   icon: z.string().max(60).optional().or(z.literal('')),
   active_from: z.string().optional().nullable().or(z.literal('')),
   active_until: z.string().optional().nullable().or(z.literal('')),
@@ -110,6 +113,9 @@ export const calendarEventSchema = z.object({
   ends_at: z.string().optional().nullable().or(z.literal('')),
   location_ar: z.string().max(300).optional().or(z.literal('')),
   location_en: z.string().max(300).optional().or(z.literal('')),
+  link_url: urlSchema,
+  description_ar: z.string().max(10000).optional().or(z.literal('')),
+  description_en: z.string().max(10000).optional().or(z.literal('')),
   source_type: z.string().max(100).optional().nullable().or(z.literal('')),
   source_id: z.string().optional().nullable().or(z.literal('')),
   status: contentStatusSchema.default('published'),

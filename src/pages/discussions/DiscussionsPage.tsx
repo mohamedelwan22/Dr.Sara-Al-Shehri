@@ -10,6 +10,7 @@ export function DiscussionsPage() {
       subtitleKey="discussions.subtitle"
       emptyKey="discussions.noItems"
       detailPrefix="discussions"
+      contentType="discussion"
       seoTitleKey="discussions.title"
     />
   );

@@ -1,17 +1,21 @@
 import { requireSupabase } from '@/lib/supabase';
 import { assertAdmin } from '@/lib/adminGuard';
 import { shouldStampPublishedAt } from '@/lib/content';
+import { removeStoredFile } from '@/lib/storageFiles';
 import type {
   Announcement,
   AuditLog,
   ContactSubmission,
-  Media,
+  DashboardSeries,
+  DashboardStats,
   Profile,
   ResearchInterest,
   SiteSetting,
   UserRole,
   AxisContentType,
 } from '@/types';
+
+export type DashboardPeriod = '7d' | '30d' | '90d';
 
 export interface AdminListParams {
   page?: number;
@@ -61,6 +65,16 @@ const SEARCHABLE_TITLE: Record<string, string> = {
   research_interests: 'title_ar',
   calendar_events: 'title_ar',
   announcements: 'title_ar',
+};
+
+/** أعمدة ملفات التخزين لكل جدول — تُستخدم لتنظيف الملفات اليتيمة عند حذف الصف. */
+const CONTENT_FILE_COLUMNS: Record<string, string[]> = {
+  research_papers: ['document_path'],
+  publications: ['document_path'],
+  courses: ['image_path', 'materials_path'],
+  lectures: ['image_path', 'materials_path'],
+  news: ['image_path'],
+  scientific_insights: ['image_path'],
 };
 
 export const adminContentService = {
@@ -155,8 +169,27 @@ export const adminContentService = {
     await assertAdmin();
     const { table } = ADMIN_ENTITY_MAP[entity];
     if (!table) throw new Error(`unknown-admin-entity:${entity}`);
+
+    const fileColumns = CONTENT_FILE_COLUMNS[table];
+    let filePaths: string[] = [];
+    if (fileColumns?.length) {
+      const { data: row } = await requireSupabase()
+        .from(table)
+        .select(fileColumns.join(','))
+        .eq('id', id)
+        .maybeSingle();
+      filePaths = (fileColumns
+        .map((column) => (row as Record<string, unknown> | null)?.[column])
+        .filter((value): value is string => typeof value === 'string' && value.length > 0) ?? []);
+    }
+
     const { error } = await requireSupabase().from(table).delete().eq('id', id);
     if (error) throw error;
+
+    // تنظيف الملفات المرتبطة (أفضل جهد — لا يمنع نجاح الحذف إن فشل التنظيف).
+    for (const path of filePaths) {
+      await removeStoredFile(path);
+    }
   },
 
   /** استبدال ارتباطات المحاور لعنصر (حذف ثم إدراج) — نفس النتيجة بدون تكرار. */
@@ -235,22 +268,10 @@ export const adminContentService = {
 
   async setUserRole(userId: string, role: 'admin' | 'user') {
     await assertAdmin();
-    const { data: existing } = await requireSupabase()
-      .from('user_roles')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (existing) {
-      const { error } = await requireSupabase()
-        .from('user_roles')
-        .update({ role })
-        .eq('user_id', userId);
-      if (error) throw error;
-      return;
-    }
-    const { error } = await requireSupabase()
-      .from('user_roles')
-      .insert({ user_id: userId, role });
+    const { error } = await requireSupabase().rpc('admin_set_user_role', {
+      p_user_id: userId,
+      p_role: role,
+    });
     if (error) throw error;
   },
 
@@ -329,49 +350,6 @@ export const adminContentService = {
     return data as SiteSetting;
   },
 
-  // ============ الملفات ============
-  async listMedia(): Promise<Media[]> {
-    const { data, error } = await requireSupabase()
-      .from('media')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return (data as Media[]) ?? [];
-  },
-
-  async registerMedia(row: Pick<Media, 'bucket' | 'storage_path' | 'mime_type' | 'size_bytes' | 'alt_ar' | 'alt_en'>) {
-    await assertAdmin();
-    const { data, error } = await requireSupabase().from('media').insert(row).select('*').single();
-    if (error) throw error;
-    return data as Media;
-  },
-
-  async uploadMedia(file: File, bucket = 'public-media'): Promise<Media> {
-    await assertAdmin();
-    const path = `admin/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-')}`;
-    const { error: uploadError } = await requireSupabase().storage.from(bucket).upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
-    if (uploadError) throw uploadError;
-    return this.registerMedia({
-      bucket,
-      storage_path: path,
-      mime_type: file.type || 'application/octet-stream',
-      size_bytes: file.size,
-      alt_ar: file.name,
-      alt_en: file.name,
-    });
-  },
-
-  async deleteMedia(id: string, bucket: string, storagePath: string) {
-    await assertAdmin();
-    const { error: storageError } = await requireSupabase().storage.from(bucket).remove([storagePath]);
-    if (storageError) throw storageError;
-    const { error } = await requireSupabase().from('media').delete().eq('id', id);
-    if (error) throw error;
-  },
-
   // ============ سجلات التدقيق والإحصائيات ============
   async listAuditLogs(limit = 100): Promise<AuditLog[]> {
     const { data, error } = await requireSupabase()
@@ -387,6 +365,22 @@ export const adminContentService = {
     const { data, error } = await requireSupabase().rpc('admin_analytics_overview');
     if (error) throw error;
     return (data ?? {}) as Record<string, number>;
+  },
+
+  /** إحصائيات لوحة التحكم الكاملة (RPC واحد) — أرقام حقيقية من قاعدة البيانات. */
+  async dashboardStats(): Promise<DashboardStats> {
+    const { data, error } = await requireSupabase().rpc('admin_dashboard_stats');
+    if (error) throw error;
+    return (data ?? {}) as DashboardStats;
+  },
+
+  /** سلسلة زمنية (مشاهدات/تنزيلات/نشر) — RPC واحد. */
+  async dashboardSeries(period: DashboardPeriod): Promise<DashboardSeries> {
+    const { data, error } = await requireSupabase().rpc('admin_dashboard_series', {
+      p_period: period,
+    });
+    if (error) throw error;
+    return (data ?? {}) as DashboardSeries;
   },
 
   // ============ أقسام السيرة (profile_content) ============

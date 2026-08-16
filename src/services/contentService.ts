@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase';
+import { normalizeSocialLinks, type SocialLinks } from '@/lib/socialLinks';
 import type { ProfileContent, SiteSetting } from '@/types';
 
 export const profileContentService = {
@@ -33,5 +34,17 @@ export const settingsService = {
       .maybeSingle();
     if (error) throw error;
     return (data as SiteSetting | null)?.value ?? null;
+  },
+
+  async getSocialLinks(): Promise<SocialLinks> {
+    const { data, error } = await requireSupabase()
+      .from('site_settings')
+      .select('*')
+      .eq('key', 'social_links')
+      .eq('is_public', true)
+      .maybeSingle();
+    if (error) throw error;
+    const value = (data as SiteSetting | null)?.value ?? {};
+    return normalizeSocialLinks(value);
   },
 };

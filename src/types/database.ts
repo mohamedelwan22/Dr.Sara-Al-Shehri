@@ -143,8 +143,14 @@ export interface Course {
   description_ar: string | null;
   description_en: string | null;
   activity_date: string | null;
+  ends_at: string | null;
   location_ar: string | null;
   location_en: string | null;
+  registration_url: string | null;
+  meeting_url: string | null;
+  video_url: string | null;
+  image_path: string | null;
+  materials_path: string | null;
   status: ContentStatus;
   published_at: string | null;
   created_at: string | null;
@@ -179,6 +185,8 @@ export interface Announcement {
   id: string;
   title_ar: string;
   title_en: string | null;
+  body_ar: string | null;
+  body_en: string | null;
   link_url: string | null;
   icon: string | null;
   active_from: string | null;
@@ -198,6 +206,9 @@ export interface CalendarEvent {
   ends_at: string | null;
   location_ar: string | null;
   location_en: string | null;
+  link_url: string | null;
+  description_ar: string | null;
+  description_en: string | null;
   source_type: string | null;
   source_id: string | null;
   status: ContentStatus;
@@ -306,4 +317,60 @@ export interface ContentMetrics {
   downloads: number;
   shares: number;
   favorites: number;
+}
+
+/** إجماليات لوحة التحكم (017_admin_dashboard.sql → admin_dashboard_stats). */
+export interface DashboardTotals {
+  views: number;
+  downloads: number;
+  shares: number;
+  favorites: number;
+  submissions: number;
+  new_submissions: number;
+  users: number;
+  submissions_by_status: Record<string, number>;
+}
+
+/** إحصاءات حالة عنصر لكل جدول محتوى. */
+export interface DashboardEntityStats {
+  total: number;
+  published: number;
+  draft: number;
+  scheduled: number;
+  archived: number;
+}
+
+/** عنصر في قائمة أحدث المحتوى بلوحة التحكم. */
+export interface DashboardRecentItem {
+  entity: string;
+  id: string;
+  slug: string | null;
+  title_ar: string;
+  title_en: string | null;
+  status: string;
+  published_at: string | null;
+  updated_at: string | null;
+}
+
+/** استجابة admin_dashboard_stats الكاملة. */
+export interface DashboardStats {
+  totals: DashboardTotals;
+  entities: Record<string, DashboardEntityStats>;
+  content: { published: number; draft: number; scheduled: number; archived: number };
+  announcements: { total: number; active: number; inactive: number };
+  recent: DashboardRecentItem[];
+}
+
+/** نقطة سلسلة زمنية للتفاعل. */
+export interface DashboardSeriesPoint {
+  date: string;
+  views: number;
+  downloads: number;
+}
+
+/** استجابة admin_dashboard_series الكاملة. */
+export interface DashboardSeries {
+  period: string;
+  points: DashboardSeriesPoint[];
+  published: { date: string; count: number }[];
 }

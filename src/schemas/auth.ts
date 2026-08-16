@@ -29,7 +29,24 @@ export const profileUpdateSchema = z.object({
   locale: z.enum(['ar', 'en']),
 });
 
+export const changeEmailSchema = z.object({
+  newEmail: z.string().min(1, { message: 'auth.invalidEmail' }).email({ message: 'auth.invalidEmail' }),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, { message: 'auth.invalidCredentials' }),
+    newPassword: z.string().min(6, { message: 'auth.passwordTooShort' }),
+    confirmPassword: z.string().min(6, { message: 'auth.passwordTooShort' }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'auth.passwordsMismatch',
+    path: ['confirmPassword'],
+  });
+
 export type SignInValues = z.infer<typeof signInSchema>;
 export type SignUpValues = z.infer<typeof signUpSchema>;
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 export type ProfileUpdateValues = z.infer<typeof profileUpdateSchema>;
+export type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;

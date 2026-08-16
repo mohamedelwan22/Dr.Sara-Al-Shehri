@@ -8,7 +8,6 @@ import {
   Layers,
   Inbox,
   Users,
-  Image,
   Settings,
   FileText,
   Lightbulb,
@@ -53,7 +52,6 @@ const CONTENT_LINKS = [
 const SYSTEM_LINKS = [
   { to: '/admin/inbox', key: 'admin.contacts', icon: Inbox },
   { to: '/admin/users', key: 'admin.users', icon: Users },
-  { to: '/admin/media', key: 'admin.media', icon: Image },
   { to: '/admin/settings', key: 'admin.settings', icon: Settings },
 ];
 

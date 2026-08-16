@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Seo } from '@/components/layout/Seo';
 import { courseService, queryKeys } from '@/services';
@@ -12,7 +13,17 @@ type Tab = 'course' | 'lecture';
 export function CoursesPage() {
   const { t, i18n } = useTranslation();
   const locale = (i18n.language === 'en' ? 'en' : 'ar') as 'ar' | 'en';
-  const [tab, setTab] = useState<Tab>('course');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab') === 'lecture' ? 'lecture' : 'course';
+  const [tab, setTab] = useState<Tab>(requestedTab);
+
+  const selectTab = (next: Tab) => {
+    setTab(next);
+    const params = new URLSearchParams(searchParams);
+    if (next === 'lecture') params.set('tab', 'lecture');
+    else params.delete('tab');
+    setSearchParams(params, { replace: true });
+  };
 
   const filters = useMemo(() => ({ page: 1, pageSize: 24 }), []);
   const query = useQuery({
@@ -32,14 +43,14 @@ export function CoursesPage() {
         <div className="mb-8 flex justify-center gap-2">
           <button
             type="button"
-            onClick={() => setTab('course')}
+            onClick={() => selectTab('course')}
             className={tab === 'course' ? 'btn-primary' : 'btn-outline'}
           >
             {t('courses.title')}
           </button>
           <button
             type="button"
-            onClick={() => setTab('lecture')}
+            onClick={() => selectTab('lecture')}
             className={tab === 'lecture' ? 'btn-primary' : 'btn-outline'}
           >
             {t('courses.lecturesTitle')}

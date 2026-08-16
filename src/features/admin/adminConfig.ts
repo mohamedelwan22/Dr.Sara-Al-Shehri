@@ -18,6 +18,9 @@ export type FieldKind =
   | 'textarea'
   | 'number'
   | 'date'
+  | 'datetime'
+  | 'url'
+  | 'file'
   | 'select'
   | 'axes'
   | 'boolean'
@@ -31,6 +34,10 @@ export interface FieldConfig {
   options?: { value: string; labelKey: string }[];
   half?: boolean;
   rows?: number;
+  /** Bucket التخزين لملفات حقول kind === 'file'. */
+  bucket?: string;
+  /** قيود إضافية لمُنتقي الملف (مثل image/*). */
+  accept?: string;
 }
 
 export interface EntityConfig {
@@ -88,7 +95,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'publication_year', kind: 'number', labelKey: 'admin.fields.publication_year', half: true },
       { key: 'abstract_ar', kind: 'textarea', labelKey: 'admin.fields.abstract_ar', rows: 4 },
       { key: 'abstract_en', kind: 'textarea', labelKey: 'admin.fields.abstract_en', rows: 4 },
-      { key: 'document_path', kind: 'text', labelKey: 'admin.fields.document_path', half: true },
+      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: 'research-documents', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
@@ -107,7 +114,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'publication_year', kind: 'number', labelKey: 'admin.fields.publication_year', half: true },
       { key: 'abstract_ar', kind: 'textarea', labelKey: 'admin.fields.abstract_ar', rows: 4 },
       { key: 'abstract_en', kind: 'textarea', labelKey: 'admin.fields.abstract_en', rows: 4 },
-      { key: 'document_path', kind: 'text', labelKey: 'admin.fields.document_path', half: true },
+      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: 'publication-documents', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
@@ -177,10 +184,16 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     fields: [
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
-      { key: 'activity_date', kind: 'date', labelKey: 'courses.date', half: true },
+      { key: 'activity_date', kind: 'datetime', labelKey: 'courses.dateTime', half: true },
+      { key: 'ends_at', kind: 'datetime', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.endsAtHint', half: true },
       ...langFields('admin.fields', 'location'),
+      { key: 'registration_url', kind: 'url', labelKey: 'admin.fields.registration_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'meeting_url', kind: 'url', labelKey: 'admin.fields.meeting_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'video_url', kind: 'url', labelKey: 'admin.fields.video_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
       { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
+      { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: 'course-assets', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
@@ -194,10 +207,16 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     fields: [
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
-      { key: 'activity_date', kind: 'date', labelKey: 'courses.date', half: true },
+      { key: 'activity_date', kind: 'datetime', labelKey: 'courses.dateTime', half: true },
+      { key: 'ends_at', kind: 'datetime', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.endsAtHint', half: true },
       ...langFields('admin.fields', 'location'),
+      { key: 'registration_url', kind: 'url', labelKey: 'admin.fields.registration_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'meeting_url', kind: 'url', labelKey: 'admin.fields.meeting_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'video_url', kind: 'url', labelKey: 'admin.fields.video_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
       { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
+      { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: 'course-assets', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
@@ -243,7 +262,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'excerpt_en', kind: 'textarea', labelKey: 'admin.fields.excerpt_en', rows: 3 },
       { key: 'body_ar', kind: 'textarea', labelKey: 'admin.fields.body_ar', rows: 8 },
       { key: 'body_en', kind: 'textarea', labelKey: 'admin.fields.body_en', rows: 8 },
-      { key: 'image_path', kind: 'text', labelKey: 'admin.fields.image_path', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
     ],
   },
@@ -259,7 +278,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'excerpt_en', kind: 'textarea', labelKey: 'admin.fields.excerpt_en', rows: 3 },
       { key: 'body_ar', kind: 'textarea', labelKey: 'admin.fields.body_ar', rows: 8 },
       { key: 'body_en', kind: 'textarea', labelKey: 'admin.fields.body_en', rows: 8 },
-      { key: 'image_path', kind: 'text', labelKey: 'admin.fields.image_path', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
     ],
   },
@@ -271,9 +290,12 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     fields: [
       ...langFields('admin.fields', 'title'),
       { key: 'event_type', kind: 'select', labelKey: 'admin.fields.event_type', options: EVENT_TYPE_OPTIONS, half: true },
-      { key: 'starts_at', kind: 'text', labelKey: 'admin.fields.starts_at', hintKey: 'admin.fields.isoHint', half: true },
-      { key: 'ends_at', kind: 'text', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.isoHint', half: true },
+      { key: 'starts_at', kind: 'datetime', labelKey: 'admin.fields.starts_at', half: true },
+      { key: 'ends_at', kind: 'datetime', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.endsAtHint', half: true },
       ...langFields('admin.fields', 'location'),
+      { key: 'link_url', kind: 'url', labelKey: 'admin.fields.link_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 4 },
+      { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 4 },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
     ],
   },
@@ -285,10 +307,12 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     fields: [
       { key: 'title_ar', kind: 'text', labelKey: 'admin.fields.title_ar', half: true },
       { key: 'title_en', kind: 'text', labelKey: 'admin.fields.title_en', half: true },
-      { key: 'link_url', kind: 'text', labelKey: 'admin.fields.link_url', hintKey: 'admin.fields.linkUrlHint', half: true },
+      { key: 'link_url', kind: 'url', labelKey: 'admin.fields.link_url', hintKey: 'admin.fields.linkUrlInternalHint', half: true },
       { key: 'icon', kind: 'text', labelKey: 'admin.fields.icon', hintKey: 'admin.fields.iconHint', half: true },
-      { key: 'active_from', kind: 'text', labelKey: 'admin.fields.active_from', hintKey: 'admin.fields.isoHint', half: true },
-      { key: 'active_until', kind: 'text', labelKey: 'admin.fields.active_until', hintKey: 'admin.fields.isoHint', half: true },
+      { key: 'active_from', kind: 'datetime', labelKey: 'admin.fields.active_from', half: true },
+      { key: 'active_until', kind: 'datetime', labelKey: 'admin.fields.active_until', hintKey: 'admin.fields.endsAtHint', half: true },
+      { key: 'body_ar', kind: 'textarea', labelKey: 'admin.fields.body_ar', rows: 6 },
+      { key: 'body_en', kind: 'textarea', labelKey: 'admin.fields.body_en', rows: 6 },
       { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
       { key: 'is_active', kind: 'boolean', labelKey: 'admin.fields.is_active' },
     ],
