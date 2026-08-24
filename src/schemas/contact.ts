@@ -13,6 +13,9 @@ export const contactTypeSchema = z.enum([
 export const contactBase = {
   name: z.string().min(1, { message: 'contact.required' }).max(120),
   email: z.string().min(1, { message: 'contact.required' }).email({ message: 'contact.invalidEmail' }),
+  organization: z.string().max(200).optional().or(z.literal('')),
+  role: z.string().min(1, { message: 'contact.required' }),
+  subject: z.string().min(1, { message: 'contact.required' }).max(200),
   phone: z.string().max(30).optional().or(z.literal('')),
   message: z.string().min(1, { message: 'contact.required' }).max(5000),
 };

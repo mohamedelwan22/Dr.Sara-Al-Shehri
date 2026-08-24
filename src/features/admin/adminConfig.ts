@@ -22,9 +22,11 @@ export type FieldKind =
   | 'url'
   | 'file'
   | 'select'
+  | 'project_select'
   | 'axes'
   | 'boolean'
-  | 'slug';
+  | 'slug'
+  | 'section';
 
 export interface FieldConfig {
   key: string;
@@ -38,6 +40,8 @@ export interface FieldConfig {
   bucket?: string;
   /** قيود إضافية لمُنتقي الملف (مثل image/*). */
   accept?: string;
+  /** قسم تنظيمي في النموذج — يُعرض كعنوان فرعي. */
+  section?: string;
 }
 
 export interface EntityConfig {
@@ -48,6 +52,18 @@ export interface EntityConfig {
   axisType?: AxisContentType;
   fields: FieldConfig[];
 }
+
+/**
+ * حالات طلبات التواصل تأتي من قاعدة البيانات بصيغة snake_case،
+ * بينما مفاتيح الترجمة camelCase — هذه الخريطة تربطها بمفاتيح i18n الصحيحة
+ * حتى لا يظهر مفتاح خام (مثل admin.in_review) في الواجهة أبدًا.
+ */
+export const CONTACT_STATUS_LABEL_KEYS = {
+  new: 'admin.new',
+  in_review: 'admin.inReview',
+  responded: 'admin.responded',
+  closed: 'admin.closed',
+} as const;
 
 const STATUS_OPTIONS = [
   { value: 'draft', labelKey: 'common.draft' },
@@ -77,6 +93,50 @@ function langFields(prefix: string, key: string): FieldConfig[] {
     { key: `${key}_en`, kind: 'text', labelKey: `${prefix}.${key}_en`, half: true },
   ];
 }
+
+const PROJECT_TYPE_OPTIONS = [
+  { value: 'research_project', labelKey: 'projects.types.researchProject' },
+  { value: 'scientific_project', labelKey: 'projects.types.scientificProject' },
+  { value: 'thesis_project', labelKey: 'projects.types.thesisProject' },
+  { value: 'manuscript_project', labelKey: 'projects.types.manuscriptProject' },
+  { value: 'collaborative_research', labelKey: 'projects.types.collaborativeResearch' },
+  { value: 'academic_study', labelKey: 'projects.types.academicStudy' },
+  { value: 'other', labelKey: 'projects.types.other' },
+];
+
+const DEGREE_OPTIONS_ADMIN = [
+  { value: 'bachelors', labelKey: 'admin.fields.degreeBachelors' },
+  { value: 'masters', labelKey: 'contact.masters' },
+  { value: 'phd', labelKey: 'contact.phd' },
+  { value: 'postdoctoral', labelKey: 'admin.fields.degreePostdoctoral' },
+];
+
+const PARTICIPATION_OPTIONS = [
+  { value: 'main_supervisor', labelKey: 'admin.fields.participationMainSupervisor' },
+  { value: 'co_supervisor', labelKey: 'admin.fields.participationCoSupervisor' },
+  { value: 'researcher', labelKey: 'admin.fields.participationResearcher' },
+  { value: 'committee_member', labelKey: 'admin.fields.participationCommitteeMember' },
+  { value: 'examiner', labelKey: 'admin.fields.participationExaminer' },
+  { value: 'other', labelKey: 'projects.types.other' },
+];
+
+const LEVEL_OPTIONS = [
+  { value: 'beginner', labelKey: 'courses.levels.beginner' },
+  { value: 'intermediate', labelKey: 'courses.levels.intermediate' },
+  { value: 'advanced', labelKey: 'courses.levels.advanced' },
+  { value: 'general', labelKey: 'courses.levels.general' },
+];
+
+const DELIVERY_MODE_OPTIONS = [
+  { value: 'online', labelKey: 'courses.modes.online' },
+  { value: 'in_person', labelKey: 'courses.modes.inPerson' },
+  { value: 'hybrid', labelKey: 'courses.modes.hybrid' },
+];
+
+const EVENT_STATUS_OPTIONS = [
+  { value: 'upcoming', labelKey: 'courses.statuses.upcoming' },
+  { value: 'completed', labelKey: 'courses.statuses.completed' },
+];
 
 export const ADMIN_ENTITIES: string[] = Object.keys(ADMIN_ENTITY_MAP);
 
@@ -132,6 +192,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       ...langFields('admin.fields', 'university'),
       { key: 'degree', kind: 'select', labelKey: 'contact.degree', options: DEGREE_OPTIONS, half: true },
       { key: 'completion_date', kind: 'date', labelKey: 'admin.fields.completion_date', half: true },
+      { key: 'project_id', kind: 'project_select', labelKey: 'projects.selectProject', half: true },
       { key: 'summary_ar', kind: 'textarea', labelKey: 'admin.fields.summary_ar', rows: 4 },
       { key: 'summary_en', kind: 'textarea', labelKey: 'admin.fields.summary_en', rows: 4 },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
@@ -151,6 +212,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       ...langFields('admin.fields', 'university'),
       { key: 'degree', kind: 'select', labelKey: 'contact.degree', options: DEGREE_OPTIONS, half: true },
       { key: 'completion_date', kind: 'date', labelKey: 'admin.fields.completion_date', half: true },
+      { key: 'project_id', kind: 'project_select', labelKey: 'projects.selectProject', half: true },
       { key: 'summary_ar', kind: 'textarea', labelKey: 'admin.fields.summary_ar', rows: 4 },
       { key: 'summary_en', kind: 'textarea', labelKey: 'admin.fields.summary_en', rows: 4 },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
@@ -164,14 +226,57 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     displayField: 'title',
     axisType: 'project',
     fields: [
+      // ── Section 1: Basic Information ──
+      { key: '_section1', kind: 'section', labelKey: 'admin.formSections.basicInfo' },
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
+      { key: 'project_type', kind: 'select', labelKey: 'admin.fields.project_type', options: PROJECT_TYPE_OPTIONS, half: true },
       { key: 'project_status', kind: 'text', labelKey: 'admin.fields.project_status', half: true },
+
+      // ── Section 2: Dates ──
+      { key: '_section2', kind: 'section', labelKey: 'admin.formSections.dates' },
       { key: 'start_date', kind: 'date', labelKey: 'projects.startDate', half: true },
       { key: 'end_date', kind: 'date', labelKey: 'projects.endDate', half: true },
+
+      // ── Section 3: People & Academic Info ──
+      { key: '_section3', kind: 'section', labelKey: 'admin.formSections.peopleAcademic' },
+      ...langFields('admin.fields', 'researcher'),
+      ...langFields('admin.fields', 'university'),
+      ...langFields('admin.fields', 'faculty'),
+      ...langFields('admin.fields', 'department'),
+      ...langFields('admin.fields', 'supervisor'),
+      { key: 'academic_degree', kind: 'select', labelKey: 'admin.fields.academic_degree', options: DEGREE_OPTIONS_ADMIN, half: true },
+      { key: 'participation_type', kind: 'select', labelKey: 'admin.fields.participation_type', options: PARTICIPATION_OPTIONS, half: true },
+
+      // ── Section 4: Descriptions ──
+      { key: '_section4', kind: 'section', labelKey: 'admin.formSections.descriptions' },
+      { key: 'short_description_ar', kind: 'textarea', labelKey: 'admin.fields.short_description_ar', rows: 3 },
+      { key: 'short_description_en', kind: 'textarea', labelKey: 'admin.fields.short_description_en', rows: 3 },
       { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
       { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
+
+      // ── Section 5: Scientific Information ──
+      { key: '_section5', kind: 'section', labelKey: 'admin.formSections.scientificInfo' },
+      { key: 'objectives_ar', kind: 'textarea', labelKey: 'admin.fields.objectives_ar', rows: 4 },
+      { key: 'objectives_en', kind: 'textarea', labelKey: 'admin.fields.objectives_en', rows: 4 },
+      { key: 'methodology_ar', kind: 'textarea', labelKey: 'admin.fields.methodology_ar', rows: 4 },
+      { key: 'methodology_en', kind: 'textarea', labelKey: 'admin.fields.methodology_en', rows: 4 },
+      { key: 'outcomes_ar', kind: 'textarea', labelKey: 'admin.fields.outcomes_ar', rows: 4 },
+      { key: 'outcomes_en', kind: 'textarea', labelKey: 'admin.fields.outcomes_en', rows: 4 },
+      { key: 'keywords', kind: 'text', labelKey: 'admin.fields.keywords' },
+
+      // ── Section 6: Media ──
+      { key: '_section6', kind: 'section', labelKey: 'admin.formSections.media' },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
+
+      // ── Section 7: Publishing ──
+      { key: '_section7', kind: 'section', labelKey: 'admin.formSections.publishing' },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'featured', kind: 'boolean', labelKey: 'admin.fields.featured' },
+
+      // ── Section 8: Scientific Axes ──
+      { key: '_section8', kind: 'section', labelKey: 'admin.formSections.axes' },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
   },
@@ -182,19 +287,42 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     displayField: 'title',
     axisType: 'course',
     fields: [
+      { key: '_sectionBasic', kind: 'section', labelKey: 'admin.formSections.basicInfo' },
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
+      ...langFields('admin.fields', 'instructor'),
+
+      { key: '_sectionSchedule', kind: 'section', labelKey: 'admin.formSections.dates' },
       { key: 'activity_date', kind: 'datetime', labelKey: 'courses.dateTime', half: true },
       { key: 'ends_at', kind: 'datetime', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.endsAtHint', half: true },
+      ...langFields('admin.fields', 'duration'),
+      { key: 'duration_hours', kind: 'number', labelKey: 'admin.fields.duration_hours', half: true },
+
+      { key: '_sectionAttributes', kind: 'section', labelKey: 'admin.formSections.attributes' },
+      { key: 'level', kind: 'select', labelKey: 'admin.fields.level', options: LEVEL_OPTIONS, half: true },
+      { key: 'delivery_mode', kind: 'select', labelKey: 'admin.fields.delivery_mode', options: DELIVERY_MODE_OPTIONS, half: true },
+      { key: 'event_status', kind: 'select', labelKey: 'admin.fields.event_status', options: EVENT_STATUS_OPTIONS, half: true },
       ...langFields('admin.fields', 'location'),
+
+      { key: '_sectionDescriptions', kind: 'section', labelKey: 'admin.formSections.descriptions' },
+      { key: 'short_description_ar', kind: 'textarea', labelKey: 'admin.fields.short_description_ar', rows: 3 },
+      { key: 'short_description_en', kind: 'textarea', labelKey: 'admin.fields.short_description_en', rows: 3 },
+      { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
+      { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
+
+      { key: '_sectionMedia', kind: 'section', labelKey: 'admin.formSections.media' },
       { key: 'registration_url', kind: 'url', labelKey: 'admin.fields.registration_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'meeting_url', kind: 'url', labelKey: 'admin.fields.meeting_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'video_url', kind: 'url', labelKey: 'admin.fields.video_url', hintKey: 'admin.fields.linkUrlHint', half: true },
-      { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
-      { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
       { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
       { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: 'course-assets', half: true },
+
+      { key: '_sectionPublishing', kind: 'section', labelKey: 'admin.formSections.publishing' },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'featured', kind: 'boolean', labelKey: 'admin.fields.featured' },
+
+      { key: '_sectionAxes', kind: 'section', labelKey: 'admin.formSections.axes' },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
   },
@@ -205,19 +333,42 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     displayField: 'title',
     axisType: 'lecture',
     fields: [
+      { key: '_sectionBasic', kind: 'section', labelKey: 'admin.formSections.basicInfo' },
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
+      ...langFields('admin.fields', 'instructor'),
+
+      { key: '_sectionSchedule', kind: 'section', labelKey: 'admin.formSections.dates' },
       { key: 'activity_date', kind: 'datetime', labelKey: 'courses.dateTime', half: true },
       { key: 'ends_at', kind: 'datetime', labelKey: 'admin.fields.ends_at', hintKey: 'admin.fields.endsAtHint', half: true },
+      ...langFields('admin.fields', 'duration'),
+      { key: 'duration_hours', kind: 'number', labelKey: 'admin.fields.duration_hours', half: true },
+
+      { key: '_sectionAttributes', kind: 'section', labelKey: 'admin.formSections.attributes' },
+      { key: 'level', kind: 'select', labelKey: 'admin.fields.level', options: LEVEL_OPTIONS, half: true },
+      { key: 'delivery_mode', kind: 'select', labelKey: 'admin.fields.delivery_mode', options: DELIVERY_MODE_OPTIONS, half: true },
+      { key: 'event_status', kind: 'select', labelKey: 'admin.fields.event_status', options: EVENT_STATUS_OPTIONS, half: true },
       ...langFields('admin.fields', 'location'),
+
+      { key: '_sectionDescriptions', kind: 'section', labelKey: 'admin.formSections.descriptions' },
+      { key: 'short_description_ar', kind: 'textarea', labelKey: 'admin.fields.short_description_ar', rows: 3 },
+      { key: 'short_description_en', kind: 'textarea', labelKey: 'admin.fields.short_description_en', rows: 3 },
+      { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
+      { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
+
+      { key: '_sectionMedia', kind: 'section', labelKey: 'admin.formSections.media' },
       { key: 'registration_url', kind: 'url', labelKey: 'admin.fields.registration_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'meeting_url', kind: 'url', labelKey: 'admin.fields.meeting_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'video_url', kind: 'url', labelKey: 'admin.fields.video_url', hintKey: 'admin.fields.linkUrlHint', half: true },
-      { key: 'description_ar', kind: 'textarea', labelKey: 'admin.fields.description_ar', rows: 5 },
-      { key: 'description_en', kind: 'textarea', labelKey: 'admin.fields.description_en', rows: 5 },
       { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
       { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: 'course-assets', half: true },
+
+      { key: '_sectionPublishing', kind: 'section', labelKey: 'admin.formSections.publishing' },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'featured', kind: 'boolean', labelKey: 'admin.fields.featured' },
+
+      { key: '_sectionAxes', kind: 'section', labelKey: 'admin.formSections.axes' },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
   },

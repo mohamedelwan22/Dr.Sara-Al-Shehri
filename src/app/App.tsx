@@ -23,6 +23,7 @@ const DiscussionDetailPage = lazy(() => import('@/pages/discussions/DiscussionsP
 const ProjectsPage = lazy(() => import('@/pages/projects/ProjectsPage').then((m) => ({ default: m.ProjectsPage })));
 const ProjectDetailPage = lazy(() => import('@/pages/projects/ProjectDetailPage').then((m) => ({ default: m.ProjectDetailPage })));
 const CoursesPage = lazy(() => import('@/pages/courses/CoursesPage').then((m) => ({ default: m.CoursesPage })));
+const CourseDetailPage = lazy(() => import('@/pages/courses/CourseDetailPage').then((m) => ({ default: m.CourseDetailPage })));
 
 const MapPage = lazy(() => import('@/pages/map/MapPage').then((m) => ({ default: m.MapPage })));
 const AxisDetailPage = lazy(() => import('@/pages/map/AxisDetailPage').then((m) => ({ default: m.AxisDetailPage })));
@@ -82,6 +83,7 @@ export function App() {
           <Route path="/projects" element={withSuspense(<ProjectsPage />)} />
           <Route path="/projects/:slug" element={withSuspense(<ProjectDetailPage />)} />
           <Route path="/courses" element={withSuspense(<CoursesPage />)} />
+          <Route path="/courses/:slug" element={withSuspense(<CourseDetailPage />)} />
 
           <Route path="/scientific-map" element={withSuspense(<MapPage />)} />
           <Route path="/scientific-map/:slug" element={withSuspense(<AxisDetailPage />)} />
@@ -117,28 +119,29 @@ export function App() {
               </RequireAuth>
             }
           />
-
-          <Route
-            path="/admin"
-            element={
-              <RequireAdmin>
-                {withSuspense(<AdminLayout />)}
-              </RequireAdmin>
-            }
-          >
-            <Route index element={withSuspense(<AdminDashboardPage />)} />
-            <Route path="profile" element={withSuspense(<AdminProfilePage />)} />
-            <Route path="announcements" element={withSuspense(<AdminAnnouncementsPage />)} />
-            <Route path=":entity" element={withSuspense(<AdminEntityListPage />)} />
-            <Route path=":entity/new" element={withSuspense(<AdminEntityFormPage />)} />
-            <Route path=":entity/:id/edit" element={withSuspense(<AdminEntityFormPage />)} />
-            <Route path="inbox" element={withSuspense(<AdminInboxPage />)} />
-            <Route path="users" element={withSuspense(<AdminUsersPage />)} />
-            <Route path="settings" element={withSuspense(<AdminSettingsPage />)} />
-          </Route>
-
-          <Route path="*" element={withSuspense(<NotFoundPage />)} />
         </Route>
+
+        {/* لوحة التحكم: هيكل مستقل بذاته (هيدر/سايدبار/تذييل خاصان بها) خارج هيكل الموقع العام */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              {withSuspense(<AdminLayout />)}
+            </RequireAdmin>
+          }
+        >
+          <Route index element={withSuspense(<AdminDashboardPage />)} />
+          <Route path="profile" element={withSuspense(<AdminProfilePage />)} />
+          <Route path="announcements" element={withSuspense(<AdminAnnouncementsPage />)} />
+          <Route path=":entity" element={withSuspense(<AdminEntityListPage />)} />
+          <Route path=":entity/new" element={withSuspense(<AdminEntityFormPage />)} />
+          <Route path=":entity/:id/edit" element={withSuspense(<AdminEntityFormPage />)} />
+          <Route path="inbox" element={withSuspense(<AdminInboxPage />)} />
+          <Route path="users" element={withSuspense(<AdminUsersPage />)} />
+          <Route path="settings" element={withSuspense(<AdminSettingsPage />)} />
+        </Route>
+
+        <Route path="*" element={withSuspense(<NotFoundPage />)} />
       </Routes>
     </>
   );

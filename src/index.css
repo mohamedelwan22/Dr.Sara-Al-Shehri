@@ -9,8 +9,12 @@
   }
 
   body {
-    @apply bg-ivory text-slateGray-dark font-sans antialiased;
+    @apply bg-white text-slateGray-dark font-sans antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  #root {
+    @apply min-h-screen bg-white;
   }
 
   [dir='rtl'] body,
@@ -38,7 +42,7 @@
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full px-5 sm:px-6 lg:px-8;
   }
 
   .section-heading {
@@ -50,7 +54,7 @@
   }
 
   .card {
-    @apply rounded-xl border border-primary-100/60 bg-white shadow-card transition-shadow duration-300 hover:shadow-elevated;
+    @apply rounded-lg border border-[#E7DFED] bg-white shadow-sm transition-all duration-300 hover:shadow-md;
   }
 
   .btn-primary {

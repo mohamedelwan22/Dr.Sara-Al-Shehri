@@ -19,12 +19,17 @@ export function useAuth(): AuthState {
   const sessionQuery = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
-      const {
-        data: { session },
-      } = await authService.getSession();
-      return session;
+      try {
+        const {
+          data: { session },
+        } = await authService.getSession();
+        return session;
+      } catch {
+        return null;
+      }
     },
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
   });
 
   const userId = sessionQuery.data?.user?.id ?? null;
@@ -33,22 +38,29 @@ export function useAuth(): AuthState {
     queryKey: queryKeys.profile,
     queryFn: () => authService.getProfile(),
     enabled: Boolean(userId),
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
   });
 
   const roleQuery = useQuery({
     queryKey: queryKeys.role,
     queryFn: () => authService.getMyRole(),
     enabled: Boolean(userId),
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
   });
 
   useEffect(() => {
     const sub = authService.onAuthStateChange(() => {
-      queryClient.invalidateQueries({ queryKey: ['session'] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.profile });
-      queryClient.invalidateQueries({ queryKey: queryKeys.role });
+      void queryClient.invalidateQueries({ queryKey: ['session'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.profile });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.role });
     });
     return () => sub.unsubscribe();
   }, [queryClient]);
+
+  const isSessionLoading = sessionQuery.isPending;
+  const isDetailsLoading = Boolean(userId) && (profileQuery.isPending || roleQuery.isPending);
 
   return {
     user: sessionQuery.data?.user
@@ -59,8 +71,7 @@ export function useAuth(): AuthState {
       : null,
     profile: profileQuery.data ?? null,
     isAdmin: Boolean(roleQuery.data?.isAdmin),
-    isLoading:
-      sessionQuery.isLoading || (Boolean(userId) && (profileQuery.isLoading || roleQuery.isLoading)),
+    isLoading: isSessionLoading || isDetailsLoading,
     isAuthenticated: Boolean(userId),
   };
 }

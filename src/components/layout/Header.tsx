@@ -42,6 +42,7 @@ const DESKTOP_NAV = [
   { to: '/scientific-mission', key: 'nav.mission', icon: Target },
   { to: '/research-interests', key: 'nav.interests', icon: Microscope },
   { to: '/supervision', key: 'nav.supervision', icon: GraduationCap },
+  { to: '/insights', key: 'nav.insights', icon: Sparkles },
   { to: '/discussions', key: 'nav.discussions', icon: Scale },
   { to: '/projects', key: 'nav.projects', icon: Lightbulb },
   { to: '/courses', key: 'nav.courses', icon: Presentation },
@@ -53,7 +54,6 @@ const MOBILE_NAV = [
   { to: '/calendar', key: 'nav.calendar', icon: CalendarDays },
   { to: '/scientific-map', key: 'nav.map', icon: Map },
   { to: '/news', key: 'nav.news', icon: Newspaper },
-  { to: '/insights', key: 'nav.insights', icon: Sparkles },
   { to: '/contact', key: 'nav.contact', icon: Mail },
 ];
 
@@ -93,19 +93,19 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/98 shadow-sm backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-[#E7DFED] bg-white shadow-[0_1px_3px_rgb(53_20_92_/_0.05)]">
       <div className="container-page">
         {/* ROW 1: TOP HEADER */}
-        <div className="flex h-16 items-center justify-between gap-2 lg:gap-4 py-2">
+        <div className="flex h-[74px] items-center justify-between gap-2 lg:gap-4 py-2">
           {/* Logo & Identity (RIGHT side in RTL) */}
           <div className="flex items-center gap-2 shrink-0 sm:gap-3">
             <Link to="/" aria-label={t('nav.home')} className="flex items-center gap-2">
-              <LogoMark className="h-10 w-10 sm:h-11 sm:w-11" />
+              <LogoMark className="h-14 w-14 sm:h-[62px] sm:w-[62px]" />
               <div className="leading-tight">
-                <p className="font-display text-sm font-bold text-primary-950 sm:text-lg">
+                <p className="font-display text-base font-bold text-[#35145C] sm:text-xl">
                   أ.د. سارة بنت عزيز الشهري
                 </p>
-                <p className="text-[11px] font-bold text-gold-600 sm:text-xs">
+                <p className="text-[11px] font-bold text-[#D89A16] sm:text-sm">
                   منصة علمية في الحديث وعلومـه
                 </p>
               </div>
@@ -113,23 +113,26 @@ export function Header() {
 
             {/* Social Icons */}
             {hasSocialLinks && (
-              <div className="hidden xl:flex items-center gap-1.5 ms-3 border-s border-slate-200 ps-3">
-                <SocialIcons links={socialLinks} />
+              <div className="hidden xl:flex items-center gap-1.5 ms-4 border-s border-[#E7DFED] ps-4">
+                <SocialIcons
+                  links={socialLinks}
+                  itemClassName="!h-8 !w-8 !rounded-md !bg-[#35145C] hover:!bg-primary-800"
+                />
               </div>
             )}
           </div>
 
           {/* Search Bar (MIDDLE) */}
-          <form onSubmit={handleSearch} className="relative hidden max-w-xs flex-1 md:block lg:max-w-sm">
+          <form onSubmit={handleSearch} className="relative hidden max-w-xs flex-1 md:block lg:max-w-[390px]">
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ابحث في الموقع..."
               aria-label={t('search.placeholder')}
-              className="w-full h-9 rounded-full border border-slate-200 bg-slate-50 pe-4 ps-9 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-200"
+              className="h-9 w-full rounded-lg border border-[#DCD4E4] bg-white pe-4 ps-10 text-xs text-slate-800 shadow-inner shadow-slate-100/40 placeholder:text-slate-400 focus:border-[#35145C] focus:outline-none focus:ring-1 focus:ring-[#35145C]/20"
             />
-            <Search className="pointer-events-none absolute start-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute start-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#35145C]" />
           </form>
 
           {/* Auth & Utility Buttons (LEFT side in RTL) */}
@@ -149,7 +152,7 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => navigate('/favorites')}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-gold-600 hover:bg-gold-50"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-[#D89A16] hover:bg-[#FFF8E8]"
                   aria-label={t('favorites.title')}
                   title={t('favorites.title')}
                 >
@@ -158,26 +161,28 @@ export function Header() {
                 <button
                   type="button"
                   onClick={() => navigate(isAdmin ? '/admin' : '/account')}
-                  className="flex h-9 items-center gap-1.5 rounded-lg border border-primary-300 bg-primary-50 px-3 text-xs font-bold text-primary-800 hover:bg-primary-100"
+                  className="flex h-9 items-center gap-1.5 rounded-lg border border-[#E7DFED] bg-slate-50 px-3 text-xs font-bold text-[#35145C] hover:bg-slate-100"
                 >
                   <UserCircle2 className="h-4 w-4" />
                   <span className="hidden sm:inline">{isAdmin ? t('nav.admin') : t('nav.account')}</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" dir="ltr">
                 <Link
                   to="/auth/sign-in"
-                  className="flex h-8 items-center gap-1.5 rounded-lg border border-gold-500 bg-white px-2.5 text-xs font-bold text-gold-700 hover:bg-gold-50 transition-colors sm:px-3"
+                  className="flex h-9 items-center gap-1.5 rounded-lg border border-[#D89A16] bg-[#D89A16] px-3 text-xs font-bold text-white shadow-[0_6px_14px_-8px_rgb(216_154_22_/_0.8)] transition-colors hover:bg-[#B9780E] sm:px-4"
+                  dir="rtl"
                 >
-                  <KeyRound className="h-3.5 w-3.5" />
+                  <KeyRound className="h-4 w-4" />
                   <span className="hidden sm:inline">تسجيل الدخول</span>
                 </Link>
                 <Link
                   to="/auth/sign-up"
-                  className="hidden sm:flex h-8 items-center gap-1.5 rounded-lg border border-primary-400 bg-white px-3 text-xs font-bold text-primary-700 hover:bg-primary-50 transition-colors"
+                  className="hidden h-9 items-center gap-1.5 rounded-lg border border-[#DCD4E4] bg-white px-4 text-xs font-bold text-[#35145C] transition-colors hover:bg-slate-50 sm:flex"
+                  dir="rtl"
                 >
-                  <UserPlus className="h-3.5 w-3.5" />
+                  <UserPlus className="h-4 w-4" />
                   <span>إنشاء حساب</span>
                 </Link>
               </div>
@@ -198,7 +203,7 @@ export function Header() {
 
         {/* ROW 2: MAIN NAVIGATION - COMPACT ONE ROW */}
         <nav
-          className="hidden md:flex items-center justify-between border-t border-slate-100 py-1.5 overflow-x-auto whitespace-nowrap no-scrollbar"
+          className="hidden h-12 items-center justify-between border-t border-[#E7DFED] py-1.5 md:flex overflow-x-auto whitespace-nowrap no-scrollbar"
           aria-label="primary navigation"
         >
           <div className="flex items-center gap-1 w-full justify-between">
@@ -208,10 +213,10 @@ export function Header() {
                 to={to}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold transition-all shrink-0 whitespace-nowrap',
+                    'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold transition-all shrink-0 whitespace-nowrap',
                     isActive
-                      ? 'bg-[#3C1B58] text-white shadow-sm'
-                      : 'text-slate-700 hover:text-primary-900 hover:bg-primary-50/70',
+                      ? 'bg-[#35145C] text-white shadow-xs'
+                      : 'text-[#35145C] hover:text-[#35145C] hover:bg-slate-100/70',
                   )
                 }
               >
@@ -245,7 +250,7 @@ export function Header() {
                 className={({ isActive }) =>
                   cn(
                     'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-bold transition-colors',
-                    isActive ? 'bg-[#3C1B58] text-white' : 'text-slate-700 hover:bg-slate-100',
+                    isActive ? 'bg-[#35145C] text-white' : 'text-slate-700 hover:bg-slate-100',
                   )
                 }
               >
@@ -308,4 +313,3 @@ export function Header() {
     </header>
   );
 }
-

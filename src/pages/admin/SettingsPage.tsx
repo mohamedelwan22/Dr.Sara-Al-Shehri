@@ -3,15 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Plus, Save, Mail, Lock, UserCircle2, Share2 } from 'lucide-react';
-import { adminContentService, authService } from '@/services';
+import { Settings as SettingsIcon, Plus, Save, Mail, Lock, UserCircle2, Share2, Building2 } from 'lucide-react';
+import { adminContentService, authService, DEFAULT_CONTACT_INFO } from '@/services';
 import { isReauthRequiredError, isSessionExpiredError } from '@/services/authService';
 import { queryKeys } from '@/services/queryKeys';
 import { changeEmailSchema, changePasswordSchema, type ChangeEmailValues, type ChangePasswordValues } from '@/schemas/auth';
 import { useAuth } from '@/hooks/useAuth';
-import { Button, Checkbox, FieldWrapper, Input, LoadingState, useToast } from '@/components/ui';
+import { Button, Checkbox, FieldWrapper, Input, Textarea, LoadingState, useToast } from '@/components/ui';
 import { SOCIAL_PLATFORMS, isValidSocialUrl } from '@/lib/socialLinks';
 import type { SiteSetting } from '@/types';
+
+import { PrivacySettingsSection } from './PrivacySettingsSection';
 
 function tryParseJson(value: string): Record<string, unknown> | null {
   try {
@@ -62,6 +64,10 @@ export function SettingsPage() {
       </h1>
 
       <AccountSection />
+
+      <ContactSettingsSection initial={rows.find((setting) => setting.key === 'contact_info')} />
+
+      <PrivacySettingsSection />
 
       <SocialLinksSection initial={rows.find((setting) => setting.key === 'social_links')} />
 
@@ -408,3 +414,117 @@ function SettingCard({
     </section>
   );
 }
+
+function ContactSettingsSection({ initial }: { initial?: SiteSetting }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    const raw = (initial?.value ?? {}) as Record<string, string>;
+    return { ...DEFAULT_CONTACT_INFO, ...raw };
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      adminContentService.upsertSetting('contact_info', payload, true),
+    onSuccess: () => {
+      toast.success(t('common.saved'));
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.settings });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings('contact_info') });
+    },
+    onError: () => toast.error(t('errors.generic')),
+  });
+
+  const handleChange = (key: string, val: string) => {
+    setValues((prev) => ({ ...prev, [key]: val }));
+  };
+
+  const handleSave = () => {
+    saveMutation.mutate(values);
+  };
+
+  return (
+    <section className="rounded-xl2 border border-primary-100 bg-white p-5 space-y-4">
+      <h2 className="flex items-center gap-2 font-display text-lg font-bold text-primary-900 border-b border-slate-100 pb-3">
+        <Building2 className="h-5 w-5 text-primary-600" />
+        {t('contact.contactInfo')} ({t('admin.title')})
+      </h2>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label={`${t('common.email')} (Email)`}>
+          <Input dir="ltr" value={values.email ?? ''} onChange={(e) => handleChange('email', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label={`${t('common.phone')} (Phone)`}>
+          <Input dir="ltr" value={values.phone ?? ''} onChange={(e) => handleChange('phone', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label="الجامعة (عربي)">
+          <Input value={values.university_ar ?? ''} onChange={(e) => handleChange('university_ar', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label="University (English)">
+          <Input dir="ltr" value={values.university_en ?? ''} onChange={(e) => handleChange('university_en', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label="القسم العلمي (عربي)">
+          <Input value={values.department_ar ?? ''} onChange={(e) => handleChange('department_ar', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label="Department (English)">
+          <Input dir="ltr" value={values.department_en ?? ''} onChange={(e) => handleChange('department_en', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label="الموقع (عربي)">
+          <Input value={values.location_ar ?? ''} onChange={(e) => handleChange('location_ar', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label="Location (English)">
+          <Input dir="ltr" value={values.location_en ?? ''} onChange={(e) => handleChange('location_en', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label="متوسط مدة الرد (عربي)">
+          <Input value={values.response_time_ar ?? ''} onChange={(e) => handleChange('response_time_ar', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label="Response Time (English)">
+          <Input dir="ltr" value={values.response_time_en ?? ''} onChange={(e) => handleChange('response_time_en', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label="وصف أعلى الصفحة (عربي)">
+          <Input value={values.subtitle_ar ?? ''} onChange={(e) => handleChange('subtitle_ar', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label="Page Subtitle (English)">
+          <Input dir="ltr" value={values.subtitle_en ?? ''} onChange={(e) => handleChange('subtitle_en', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldWrapper label="التنويه الأكاديمي أسفل الصفحة (عربي)">
+          <Textarea rows={3} value={values.notice_ar ?? ''} onChange={(e) => handleChange('notice_ar', e.target.value)} />
+        </FieldWrapper>
+        <FieldWrapper label="Academic Notice (English)">
+          <Textarea dir="ltr" rows={3} value={values.notice_en ?? ''} onChange={(e) => handleChange('notice_en', e.target.value)} />
+        </FieldWrapper>
+      </div>
+
+      <div className="flex justify-end pt-2">
+        <Button
+          size="sm"
+          onClick={handleSave}
+          isLoading={saveMutation.isPending}
+          leftIcon={<Save className="h-3.5 w-3.5" />}
+        >
+          {t('common.save')}
+        </Button>
+      </div>
+    </section>
+  );
+}
+

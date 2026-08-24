@@ -6,7 +6,11 @@ export {
 } from './researchService';
 export { supervisionService } from './supervisionService';
 export { projectService, type ProjectWithRelated } from './projectService';
-export { courseService } from './courseService';
+export {
+  courseService,
+  type CourseFilterMode,
+  type CombinedCourseFilters,
+} from './courseService';
 export { newsService } from './newsService';
 export { mapService, type AxisWithCounts } from './mapService';
 export { searchService } from './searchService';
@@ -19,11 +23,8 @@ export {
 } from './homepageService';
 export { contactService } from './contactService';
 export { interactionService } from './interactionService';
-export { profileContentService, settingsService } from './contentService';
-export {
-  adminContentService,
-  ADMIN_ENTITY_MAP,
-  type AdminListParams,
-  type AdminListResult,
-} from './adminContentService';
+export { profileContentService, settingsService, DEFAULT_CONTACT_INFO } from './contentService';
+export { adminContentService, ADMIN_ENTITY_MAP, type AdminListParams, type AdminListResult } from './adminContentService';
+export { privacyService, DEFAULT_PRIVACY_INFO, DEFAULT_PRIVACY_SECTIONS } from './privacyService';
+export { termsService, DEFAULT_TERMS_INFO, DEFAULT_TERMS_SECTIONS } from './termsService';
 export { queryKeys } from './queryKeys';

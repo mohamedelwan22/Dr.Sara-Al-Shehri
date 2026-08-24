@@ -20,11 +20,13 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { adminContentService, ADMIN_ENTITY_MAP, type DashboardPeriod } from '@/services/adminContentService';
+import type { DashboardStats } from '@/types';
 import { queryKeys } from '@/services/queryKeys';
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui';
 import { LoadingState, ErrorState, Badge } from '@/components/ui';
 import { SeriesChart, StatusBar, type SeriesDatum } from '@/components/charts/SeriesChart';
 import { formatNumber, formatDate } from '@/lib/utils';
+import { CONTACT_STATUS_LABEL_KEYS } from '@/features/admin/adminConfig';
 
 const PERIODS: DashboardPeriod[] = ['7d', '30d', '90d'];
 
@@ -79,15 +81,17 @@ export function DashboardPage() {
   const stats = useQuery({
     queryKey: queryKeys.admin.dashboard,
     queryFn: () => adminContentService.dashboardStats(),
+    retry: 1,
   });
 
   const series = useQuery({
     queryKey: queryKeys.admin.dashboardSeries(period),
     queryFn: () => adminContentService.dashboardSeries(period),
+    retry: 1,
   });
 
-  if (stats.isPending || series.isPending) return <LoadingState />;
-  if (stats.isError || series.isError) {
+  if (stats.isPending && series.isPending) return <LoadingState />;
+  if (stats.isError && series.isError) {
     return (
       <ErrorState
         message={t('errors.generic')}
@@ -99,9 +103,15 @@ export function DashboardPage() {
     );
   }
 
-  const s = stats.data;
-  const totals = s.totals;
-  const chartData: SeriesDatum[] = series.data.points.map((p) => ({
+  const s = stats.data ?? {
+    totals: { views: 0, downloads: 0, shares: 0, favorites: 0, submissions: 0, users: 0, new_submissions: 0, submissions_by_status: { new: 0, in_review: 0, responded: 0, closed: 0 } },
+    content: { published: 0, draft: 0, scheduled: 0, archived: 0 },
+    announcements: { active: 0, inactive: 0 },
+    entities: {} as DashboardStats['entities'],
+    recent: [],
+  };
+  const totals = s.totals ?? { views: 0, downloads: 0, shares: 0, favorites: 0, submissions: 0, users: 0, new_submissions: 0, submissions_by_status: { new: 0, in_review: 0, responded: 0, closed: 0 } };
+  const chartData: SeriesDatum[] = (series.data?.points ?? []).map((p) => ({
     date: p.date,
     views: p.views,
     downloads: p.downloads,
@@ -299,7 +309,7 @@ export function DashboardPage() {
                     to="/admin/inbox"
                     className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-2.5 text-sm transition-colors hover:bg-slate-50"
                   >
-                    <span className="font-semibold text-primary-900">{t(`admin.${status}`)}</span>
+                    <span className="font-semibold text-primary-900">{t(CONTACT_STATUS_LABEL_KEYS[status])}</span>
                     <span className="text-slateGray" dir="ltr">
                       {totals.submissions_by_status?.[status] ?? 0}
                     </span>

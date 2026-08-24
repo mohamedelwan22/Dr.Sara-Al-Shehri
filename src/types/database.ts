@@ -48,6 +48,30 @@ export interface ProfileContent {
   updated_at: string;
 }
 
+export interface PrivacySection {
+  id: string;
+  section_number: string;
+  title_ar: string;
+  title_en: string;
+  content_ar: string;
+  content_en: string;
+  icon: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PrivacyInfo {
+  title_ar?: string;
+  title_en?: string;
+  subtitle_ar?: string;
+  subtitle_en?: string;
+  quote_ar?: string;
+  quote_en?: string;
+  artwork_url?: string;
+}
+
 export interface ResearchInterest {
   id: string;
   title_ar: string;
@@ -111,20 +135,53 @@ export interface ScientificSupervision {
   updated_at: string | null;
 }
 
+export interface ProjectMetrics {
+  totalTheses: number;
+  awardedTheses: number;
+  inProgressTheses: number;
+  progressPercent: number;
+}
+
 export interface ResearchProject {
   id: string;
   slug: string;
   title_ar: string;
   title_en: string | null;
+  short_description_ar: string | null;
+  short_description_en: string | null;
   description_ar: string | null;
   description_en: string | null;
+  project_type: string | null;
   project_status: string | null;
   start_date: string | null;
   end_date: string | null;
+  researcher_ar: string | null;
+  researcher_en: string | null;
+  university_ar: string | null;
+  university_en: string | null;
+  faculty_ar: string | null;
+  faculty_en: string | null;
+  department_ar: string | null;
+  department_en: string | null;
+  supervisor_ar: string | null;
+  supervisor_en: string | null;
+  academic_degree: string | null;
+  participation_type: string | null;
+  objectives_ar: string | null;
+  objectives_en: string | null;
+  methodology_ar: string | null;
+  methodology_en: string | null;
+  outcomes_ar: string | null;
+  outcomes_en: string | null;
+  keywords: string | null;
+  image_path: string | null;
+  sort_order: number | null;
+  featured: boolean | null;
   status: ContentStatus;
   published_at: string | null;
   created_at: string | null;
   updated_at: string | null;
+  metrics?: ProjectMetrics;
 }
 
 export interface ProjectRelatedItem {
@@ -140,8 +197,18 @@ export interface Course {
   slug: string;
   title_ar: string;
   title_en: string | null;
+  short_description_ar?: string | null;
+  short_description_en?: string | null;
   description_ar: string | null;
   description_en: string | null;
+  instructor_ar?: string | null;
+  instructor_en?: string | null;
+  duration_ar?: string | null;
+  duration_en?: string | null;
+  duration_hours?: number | null;
+  level?: 'beginner' | 'intermediate' | 'advanced' | 'general' | string | null;
+  delivery_mode?: 'online' | 'in_person' | 'hybrid' | string | null;
+  event_status?: 'upcoming' | 'completed' | string | null;
   activity_date: string | null;
   ends_at: string | null;
   location_ar: string | null;
@@ -151,10 +218,16 @@ export interface Course {
   video_url: string | null;
   image_path: string | null;
   materials_path: string | null;
+  sort_order?: number | null;
+  featured?: boolean | null;
   status: ContentStatus;
   published_at: string | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+export interface CourseOrLectureItem extends Course {
+  contentType: 'course' | 'lecture';
 }
 
 export interface ContentAxisLink {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, Download } from 'lucide-react';
 import { adminContentService } from '@/services';
+import { CONTACT_STATUS_LABEL_KEYS } from '@/features/admin/adminConfig';
 import { queryKeys } from '@/services/queryKeys';
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui';
@@ -123,7 +124,7 @@ export function InboxPage() {
               status === key ? 'bg-primary-600 text-white' : 'bg-white text-primary-800 hover:bg-primary-50'
             }`}
           >
-            {t(`admin.${key}`)}
+            {t(CONTACT_STATUS_LABEL_KEYS[key])}
           </button>
         ))}
       </div>
@@ -150,7 +151,7 @@ export function InboxPage() {
                 <span className="text-xs text-slateGray" dir="ltr">
                   {formatDate(row.created_at)}
                 </span>
-                <Badge tone={STATUS_TONES[row.status] ?? 'gray'}>{t(`admin.${row.status}`)}</Badge>
+                <Badge tone={STATUS_TONES[row.status] ?? 'gray'}>{t(CONTACT_STATUS_LABEL_KEYS[row.status])}</Badge>
                 <Eye className="h-4 w-4 text-primary-600" />
               </div>
             </button>
@@ -188,9 +189,7 @@ export function InboxPage() {
             {selected.payload && Object.keys(selected.payload).length > 0 && (
               <div>
                 <p className="label-field">{t('admin.payload')}</p>
-                <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-ivory p-3 text-xs text-primary-900" dir="ltr">
-                  {JSON.stringify(selected.payload, null, 2)}
-                </pre>
+                <PayloadDetails payload={selected.payload} type={selected.type} />
               </div>
             )}
 
@@ -233,11 +232,11 @@ export function InboxPage() {
                         : 'bg-white text-primary-800 hover:bg-primary-50'
                     }`}
                   >
-                    {t(`admin.${key}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {t(CONTACT_STATUS_LABEL_KEYS[key])}
+          </button>
+        ))}
+      </div>
+      </div>
 
             <div>
               <p className="label-field">{t('admin.internalNotes')}</p>
@@ -274,3 +273,78 @@ function Field({ label, value, dir }: { label: string; value: string; dir?: stri
     </div>
   );
 }
+
+/** Human-readable payload renderer — translates JSON keys to Arabic labels. */
+const PAYLOAD_LABELS: Record<string, string> = {
+  subject:             'موضوع الرسالة',
+  role:                'الصفة',
+  organization:        'الجهة / الجامعة',
+  degree:              'الدرجة العلمية',
+  university:          'الجامعة',
+  proposedTitle:       'عنوان الرسالة المقترح',
+  hasResearchPlan:     'هل توجد خطة بحث؟',
+  thesisTitle:         'عنوان الرسالة',
+  proposedDate:        'تاريخ المناقشة المقترح',
+  discussionLocation:  'مكان المناقشة',
+  activityTitle:       'عنوان النشاط',
+  activityType:        'نوع النشاط',
+  date:                'التاريخ',
+  attendance:          'نمط الحضور',
+  hours:               'عدد الساعات',
+  conferenceName:      'اسم المؤتمر',
+  organizer:           'الجهة المنظمة',
+  conferenceLocation:  'مكان المؤتمر',
+  participationType:   'نوع المشاركة',
+  projectName:         'اسم المشروع',
+  projectDescription:  'وصف المشروع',
+  collaborationType:   'نوع التعاون',
+};
+
+const VALUE_LABELS: Record<string, string> = {
+  student: 'طالب',
+  researcher: 'باحث',
+  faculty: 'عضو هيئة تدريس',
+  academic: 'أكاديمي',
+  other: 'أخرى',
+  masters: 'ماجستير',
+  phd: 'دكتوراه',
+  yes: 'نعم',
+  no: 'لا',
+  inPerson: 'حضوري',
+  remote: 'عن بُعد',
+  hybrid: 'هجين',
+  course: 'دورة',
+  lecture: 'محاضرة',
+  workshop: 'ورشة عمل',
+  meeting: 'لقاء علمي',
+  speaker: 'متحدث رئيس',
+  committee: 'عضو لجنة',
+  session: 'إدارة جلسة',
+};
+
+function PayloadDetails({
+  payload,
+}: {
+  payload: Record<string, unknown>;
+  type: string;
+}) {
+  const entries = Object.entries(payload).filter(([, v]) => v !== undefined && v !== null && v !== '');
+  if (!entries.length) return null;
+
+  return (
+    <dl className="grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-ivory p-3 sm:grid-cols-2">
+      {entries.map(([key, val]) => {
+        const label = PAYLOAD_LABELS[key] ?? key;
+        const rawVal = String(val);
+        const displayVal = VALUE_LABELS[rawVal] ?? rawVal;
+        return (
+          <div key={key}>
+            <dt className="text-xs font-bold text-slateGray">{label}</dt>
+            <dd className="mt-0.5 text-sm text-primary-900">{displayVal}</dd>
+          </div>
+        );
+      })}
+    </dl>
+  );
+}
+

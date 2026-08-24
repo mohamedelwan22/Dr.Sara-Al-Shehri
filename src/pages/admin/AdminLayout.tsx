@@ -108,9 +108,9 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-ivory -mb-16">
+    <div className="flex h-screen flex-col overflow-hidden bg-ivory">
       {/* الشريط العلوي */}
-      <header className="sticky top-0 z-40 border-b border-primary-800 bg-primary-900">
+      <header className="relative z-40 shrink-0 border-b border-primary-800 bg-primary-900">
         <div className="flex h-14 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
@@ -141,27 +141,32 @@ export function AdminLayout() {
         </div>
       </header>
 
-      <div className="flex flex-1 items-start">
-        {/* الشريط الجانبي */}
+      <div className="flex min-h-0 flex-1">
+        {/* الشريط الجانبي: عمود كامل الارتفاع بتمرير رأسي مستقل (يمين الشاشة في RTL) */}
         <aside
           className={cn(
             'w-64 shrink-0 overflow-y-auto bg-primary-900 py-6',
-            'fixed inset-y-0 right-0 z-30 pt-14 transition-transform lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:self-start lg:pt-6 lg:translate-x-0',
+            'fixed inset-y-0 right-0 z-30 pt-14 transition-transform lg:static lg:pt-6 lg:translate-x-0',
             open ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
           )}
         >
           {nav}
         </aside>
 
-        {/* المحتوى */}
-        <main className="min-w-0 flex-1 p-4 sm:p-6">
-          {user && (
-            <p className="mb-4 text-xs text-slateGray" dir="ltr">
-              {user.email}
-            </p>
-          )}
-          <Outlet />
-        </main>
+        {/* المحتوى + التذييل: عمود مستقل، التمرير داخل main فقط */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
+            {user && (
+              <p className="mb-4 text-xs text-slateGray" dir="ltr">
+                {user.email}
+              </p>
+            )}
+            <Outlet />
+          </main>
+          <footer className="shrink-0 border-t border-primary-100 bg-white px-4 py-3 text-center text-xs font-medium text-slateGray sm:px-6">
+            <span dir="auto">{t('footer.rights')} — {t('admin.title')}</span>
+          </footer>
+        </div>
       </div>
     </div>
   );

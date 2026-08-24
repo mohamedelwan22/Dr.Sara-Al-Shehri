@@ -75,6 +75,7 @@ const CONTENT_FILE_COLUMNS: Record<string, string[]> = {
   lectures: ['image_path', 'materials_path'],
   news: ['image_path'],
   scientific_insights: ['image_path'],
+  research_projects: ['image_path'],
 };
 
 export const adminContentService = {
@@ -127,12 +128,30 @@ export const adminContentService = {
     if (shouldStampPublishedAt(table, payload.status, payload.published_at)) {
       body.published_at = new Date().toISOString();
     }
+    if (import.meta.env.DEV) {
+      console.debug('[adminContentService.create]', {
+        table,
+        operation: 'insert',
+        keys: Object.keys(body),
+        types: Object.fromEntries(Object.entries(body).map(([k, v]) => [k, Array.isArray(v) ? `array(${v.length})` : typeof v])),
+      });
+    }
     const { data, error } = await requireSupabase()
       .from(table)
       .insert(body)
       .select('*')
       .single();
-    if (error) throw error;
+    if (error) {
+      console.error('[adminContentService.create] SUPABASE ERROR', {
+        table,
+        operation: 'insert',
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
+      throw error;
+    }
     return data as T;
   },
 

@@ -22,9 +22,9 @@ export function ProjectsPage() {
 
   return (
     <>
-      <Seo title={t('projects.title')} />
-      <PageHeader title={t('projects.title')} />
-      <div className="container-page py-10">
+      <Seo title={t('projects.title')} description={t('projects.subtitle')} />
+      <PageHeader title={t('projects.title')} subtitle={t('projects.subtitle')} />
+      <div className="container-page py-8 sm:py-10">
         {query.isLoading ? (
           <SkeletonGrid count={6} />
         ) : query.isError ? (
@@ -33,22 +33,26 @@ export function ProjectsPage() {
           <EmptyState title={t('projects.noProjects')} />
         ) : (
           <>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Responsive Grid: 3 columns Desktop, 2 Tablet, 1 Mobile */}
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {items.map((project) => (
                 <ProjectCard key={project.id} project={project} locale={locale} />
               ))}
             </div>
+
             {query.data && query.data.totalPages > 1 && (
-              <Pagination
-                page={page}
-                totalPages={query.data.totalPages}
-                onChange={(next) => {
-                  const params = new URLSearchParams(searchParams);
-                  if (next === 1) params.delete('page');
-                  else params.set('page', String(next));
-                  setSearchParams(params);
-                }}
-              />
+              <div className="mt-10 flex justify-center">
+                <Pagination
+                  page={page}
+                  totalPages={query.data.totalPages}
+                  onChange={(next) => {
+                    const params = new URLSearchParams(searchParams);
+                    if (next === 1) params.delete('page');
+                    else params.set('page', String(next));
+                    setSearchParams(params);
+                  }}
+                />
+              </div>
             )}
           </>
         )}

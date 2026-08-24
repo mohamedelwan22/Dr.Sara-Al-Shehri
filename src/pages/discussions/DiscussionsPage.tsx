@@ -1,8 +1,11 @@
 import { DatedListPage } from '@/features/supervision/DatedListPage';
 import { DatedDetailPage } from '@/features/supervision/DatedDetailPage';
 import { supervisionService } from '@/services';
+import { useTranslation } from 'react-i18next';
 
 export function DiscussionsPage() {
+  const { t } = useTranslation();
+
   return (
     <DatedListPage
       listFn={supervisionService.listDiscussions}
@@ -12,6 +15,8 @@ export function DiscussionsPage() {
       detailPrefix="discussions"
       contentType="discussion"
       seoTitleKey="discussions.title"
+      supervisionTypeLabel={t('discussions.supervisionTypeLabel')}
+      completionDateLabel={t('discussions.completionDateLabel')}
     />
   );
 }
