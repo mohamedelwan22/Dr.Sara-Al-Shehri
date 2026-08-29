@@ -9,9 +9,16 @@ import {
   interestSchema,
   calendarEventSchema,
   announcementSchema,
+  scientificSelectionSchema,
 } from '@/schemas/content';
 import { ADMIN_ENTITY_MAP } from '@/services';
 import type { AxisContentType } from '@/types';
+import {
+  CONTENT_DOCUMENT_BUCKET,
+  COURSE_ASSETS_BUCKET,
+  PUBLIC_MEDIA_BUCKET,
+  PUBLICATION_DOCUMENT_BUCKET,
+} from '@/lib/storageFiles';
 
 export type FieldKind =
   | 'text'
@@ -150,13 +157,17 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     fields: [
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
+      { key: 'research_type', kind: 'text', labelKey: 'admin.fields.research_type', half: true },
       ...langFields('admin.fields', 'author'),
       ...langFields('admin.fields', 'institution'),
       { key: 'publication_year', kind: 'number', labelKey: 'admin.fields.publication_year', half: true },
       { key: 'abstract_ar', kind: 'textarea', labelKey: 'admin.fields.abstract_ar', rows: 4 },
       { key: 'abstract_en', kind: 'textarea', labelKey: 'admin.fields.abstract_en', rows: 4 },
-      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: 'research-documents', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
+      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: CONTENT_DOCUMENT_BUCKET, half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'featured', kind: 'boolean', labelKey: 'admin.fields.featured' },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
   },
@@ -169,13 +180,17 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
     fields: [
       ...langFields('admin.fields', 'title'),
       { key: 'slug', kind: 'slug', labelKey: 'admin.fields.slug', half: true },
+      { key: 'research_type', kind: 'text', labelKey: 'admin.fields.research_type', half: true },
       ...langFields('admin.fields', 'author'),
       ...langFields('admin.fields', 'institution'),
       { key: 'publication_year', kind: 'number', labelKey: 'admin.fields.publication_year', half: true },
       { key: 'abstract_ar', kind: 'textarea', labelKey: 'admin.fields.abstract_ar', rows: 4 },
       { key: 'abstract_en', kind: 'textarea', labelKey: 'admin.fields.abstract_en', rows: 4 },
-      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: 'publication-documents', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
+      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: PUBLICATION_DOCUMENT_BUCKET, half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'featured', kind: 'boolean', labelKey: 'admin.fields.featured' },
       { key: 'axisIds', kind: 'axes', labelKey: 'admin.fields.axisIds' },
     ],
   },
@@ -267,7 +282,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
 
       // ── Section 6: Media ──
       { key: '_section6', kind: 'section', labelKey: 'admin.formSections.media' },
-      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
 
       // ── Section 7: Publishing ──
       { key: '_section7', kind: 'section', labelKey: 'admin.formSections.publishing' },
@@ -314,8 +329,8 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'registration_url', kind: 'url', labelKey: 'admin.fields.registration_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'meeting_url', kind: 'url', labelKey: 'admin.fields.meeting_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'video_url', kind: 'url', labelKey: 'admin.fields.video_url', hintKey: 'admin.fields.linkUrlHint', half: true },
-      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
-      { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: 'course-assets', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
+      { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: COURSE_ASSETS_BUCKET, half: true },
 
       { key: '_sectionPublishing', kind: 'section', labelKey: 'admin.formSections.publishing' },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
@@ -360,8 +375,8 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'registration_url', kind: 'url', labelKey: 'admin.fields.registration_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'meeting_url', kind: 'url', labelKey: 'admin.fields.meeting_url', hintKey: 'admin.fields.linkUrlHint', half: true },
       { key: 'video_url', kind: 'url', labelKey: 'admin.fields.video_url', hintKey: 'admin.fields.linkUrlHint', half: true },
-      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
-      { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: 'course-assets', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
+      { key: 'materials_path', kind: 'file', labelKey: 'admin.fields.materials_path', bucket: COURSE_ASSETS_BUCKET, half: true },
 
       { key: '_sectionPublishing', kind: 'section', labelKey: 'admin.formSections.publishing' },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
@@ -413,7 +428,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'excerpt_en', kind: 'textarea', labelKey: 'admin.fields.excerpt_en', rows: 3 },
       { key: 'body_ar', kind: 'textarea', labelKey: 'admin.fields.body_ar', rows: 8 },
       { key: 'body_en', kind: 'textarea', labelKey: 'admin.fields.body_en', rows: 8 },
-      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
     ],
   },
@@ -429,7 +444,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'excerpt_en', kind: 'textarea', labelKey: 'admin.fields.excerpt_en', rows: 3 },
       { key: 'body_ar', kind: 'textarea', labelKey: 'admin.fields.body_ar', rows: 8 },
       { key: 'body_en', kind: 'textarea', labelKey: 'admin.fields.body_en', rows: 8 },
-      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: 'public-media', accept: 'image/*', half: true },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
       { key: 'status', kind: 'select', labelKey: 'common.status', options: STATUS_OPTIONS, half: true },
     ],
   },
@@ -464,6 +479,39 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
       { key: 'active_until', kind: 'datetime', labelKey: 'admin.fields.active_until', hintKey: 'admin.fields.endsAtHint', half: true },
       { key: 'body_ar', kind: 'textarea', labelKey: 'admin.fields.body_ar', rows: 6 },
       { key: 'body_en', kind: 'textarea', labelKey: 'admin.fields.body_en', rows: 6 },
+      { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
+      { key: 'is_active', kind: 'boolean', labelKey: 'admin.fields.is_active' },
+    ],
+  },
+  selections: {
+    entity: 'selections',
+    schema: scientificSelectionSchema,
+    titleField: 'title_ar',
+    displayField: 'title',
+    fields: [
+      {
+        key: 'section',
+        kind: 'select',
+        labelKey: 'admin.fields.selection_section',
+        options: [
+          { value: 'selected_research', labelKey: 'selections.sections.selected_research' },
+          { value: 'selected_publications', labelKey: 'selections.sections.selected_publications' },
+          { value: 'distinguished_theses', labelKey: 'selections.sections.distinguished_theses' },
+        ],
+        half: true,
+      },
+      ...langFields('admin.fields', 'title'),
+      ...langFields('admin.fields', 'subtitle'),
+      ...langFields('admin.fields', 'author'),
+      ...langFields('admin.fields', 'university'),
+      ...langFields('admin.fields', 'journal'),
+      { key: 'publication_year', kind: 'text', labelKey: 'admin.fields.publication_year', half: true },
+      { key: 'grant_year', kind: 'text', labelKey: 'admin.fields.grant_year', half: true },
+      { key: 'summary_ar', kind: 'textarea', labelKey: 'admin.fields.summary_ar', rows: 4 },
+      { key: 'summary_en', kind: 'textarea', labelKey: 'admin.fields.summary_en', rows: 4 },
+      { key: 'image_path', kind: 'file', labelKey: 'admin.fields.image_path', bucket: PUBLIC_MEDIA_BUCKET, accept: 'image/*', half: true },
+      { key: 'document_path', kind: 'file', labelKey: 'admin.fields.document_path', bucket: CONTENT_DOCUMENT_BUCKET, half: true },
+      { key: 'read_url', kind: 'url', labelKey: 'admin.fields.read_url', half: true },
       { key: 'sort_order', kind: 'number', labelKey: 'admin.fields.sort_order', half: true },
       { key: 'is_active', kind: 'boolean', labelKey: 'admin.fields.is_active' },
     ],

@@ -14,9 +14,10 @@ import { LoadingState } from '@/components/ui';
 import { useToast } from '@/components/ui';
 import { formatDate, formatBytes } from '@/lib/utils';
 import { requireSupabase } from '@/lib/supabase';
+import { CONTACT_ATTACHMENTS_BUCKET } from '@/lib/storageFiles';
 import type { ContactSubmission } from '@/types';
 
-const CONTACT_BUCKET = 'contact-attachments';
+const CONTACT_BUCKET = CONTACT_ATTACHMENTS_BUCKET;
 
 const STATUS_KEYS = ['new', 'in_review', 'responded', 'closed'] as const;
 const STATUS_TONES: Record<string, 'primary' | 'gold' | 'green' | 'gray'> = {

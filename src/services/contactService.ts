@@ -1,4 +1,5 @@
 import { requireSupabase } from '@/lib/supabase';
+import { CONTACT_ATTACHMENTS_BUCKET } from '@/lib/storageFiles';
 import { uuid } from '@/lib/utils';
 import type { ContactSubmission, ContactAttachment } from '@/types';
 import type { ContactFormValues } from '@/schemas/contact';
@@ -53,7 +54,7 @@ export const contactService = {
       const ext = attachment.name.split('.').pop()?.toLowerCase() || 'pdf';
       const storagePath = `${submissionData.id}/${uuid()}.${ext}`;
       const { error: uploadError } = await client.storage
-        .from('contact-attachments')
+        .from(CONTACT_ATTACHMENTS_BUCKET)
         .upload(storagePath, attachment, { contentType: attachment.type || 'application/octet-stream', upsert: false });
       if (uploadError) throw uploadError;
 

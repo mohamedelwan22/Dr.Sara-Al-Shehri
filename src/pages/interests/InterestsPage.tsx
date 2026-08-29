@@ -139,9 +139,9 @@ export function InterestsPage() {
             <span className="h-px w-8 bg-[#D89A16]/50 sm:w-12" />
           </div>
           <div className="mx-auto mt-1.5 h-0.5 w-10 rounded-full bg-[#D89A16]" />
-          <p className="mx-auto mt-1.5 max-w-md text-xs font-bold text-[#35145C]/70 sm:text-sm">
+          {/* <p className="mx-auto mt-1.5 max-w-md text-xs font-bold text-[#35145C]/70 sm:text-sm">
             {t('interests.subtitle')}
-          </p>
+          </p> */}
         </div>
       </section>
 

@@ -17,6 +17,7 @@ import {
   fileDisplayName,
   isImageStoragePath,
   isPublicBucket,
+  PUBLIC_MEDIA_BUCKET,
   removeStoredFile,
   splitStoragePath,
   uploadContentFile,
@@ -598,7 +599,7 @@ function FileField({
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const bucket = field.bucket ?? 'public-media';
+  const bucket = field.bucket ?? PUBLIC_MEDIA_BUCKET;
   const id = `field-${field.key}`;
   const label = t(field.labelKey);
   const hint = field.hintKey ? t(field.hintKey) : undefined;

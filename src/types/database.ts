@@ -5,6 +5,37 @@
 export type ContentStatus = 'draft' | 'published' | 'scheduled' | 'archived';
 export type AppRole = 'admin' | 'user';
 
+export type ScientificSelectionSection =
+  | 'selected_research'
+  | 'selected_publications'
+  | 'distinguished_theses';
+
+export interface ScientificSelection {
+  id: string;
+  section: ScientificSelectionSection;
+  title_ar: string;
+  title_en?: string | null;
+  subtitle_ar?: string | null;
+  subtitle_en?: string | null;
+  author_ar?: string | null;
+  author_en?: string | null;
+  university_ar?: string | null;
+  university_en?: string | null;
+  journal_ar?: string | null;
+  journal_en?: string | null;
+  publication_year?: string | null;
+  grant_year?: string | null;
+  summary_ar?: string | null;
+  summary_en?: string | null;
+  image_path?: string | null;
+  document_path?: string | null;
+  read_url?: string | null;
+  sort_order?: number | null;
+  is_active: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
 export type AxisContentType =
   | 'research'
   | 'publication'
@@ -107,9 +138,13 @@ export interface ResearchPaper {
   institution_ar: string | null;
   institution_en: string | null;
   publication_year: number | null;
+  research_type?: string | null;
   abstract_ar: string | null;
   abstract_en: string | null;
+  image_path?: string | null;
   document_path: string | null;
+  sort_order?: number | null;
+  featured?: boolean | null;
   status: ContentStatus;
   published_at: string | null;
   created_at: string | null;

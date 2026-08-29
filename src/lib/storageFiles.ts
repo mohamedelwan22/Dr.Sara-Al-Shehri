@@ -7,16 +7,43 @@
 
 import { requireSupabase, getPublicStorageUrl } from '@/lib/supabase';
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * مصدر واحد لتسمية Buckets التخزين في المنصة.
+ * تُستخدم هذه الثوابت في كل العمليات (رفع/قراءة/تنزيل/حذف/توقيع رابط) بدل
+ * توزيع أسماء الـ buckets كنصوص Hardcoded في عدة ملفات.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** مستندات المحتوى العلمي (أبحاث/مؤلفات/رسائل...) — خاصة، تحتاج Signed URL. */
+export const CONTENT_DOCUMENT_BUCKET = 'research-documents' as const;
+
+/** مستندات المؤلفات (اختياري/أرشيف) — خاصة. */
+export const PUBLICATION_DOCUMENT_BUCKET = 'publication-documents' as const;
+
+/** أصول المقررات (ملفات الدورات/المحاضرات) — خاصة. */
+export const COURSE_ASSETS_BUCKET = 'course-assets' as const;
+
+/** مستندات المشاريع البحثية — خاصة. */
+export const PROJECT_DOCUMENTS_BUCKET = 'project-documents' as const;
+
+/** صور/وسائط عامة يمكن لأي زائر الوصول إليها برابط مباشر. */
+export const PUBLIC_MEDIA_BUCKET = 'public-media' as const;
+
+/** أصول الهوية/العلامة التجارية — عامة. */
+export const BRANDING_ASSETS_BUCKET = 'branding-assets' as const;
+
+/** مرفقات نموذج التواصل — خاصة (رفع زائر، قراءة/حذف أدمن). */
+export const CONTACT_ATTACHMENTS_BUCKET = 'contact-attachments' as const;
+
 /** Buckets المحتوى الخاصة التي تحتاج Signed URL (قراءتها محصورة بالأدمن عبر RLS). */
 export const PRIVATE_CONTENT_BUCKETS = [
-  'research-documents',
-  'publication-documents',
-  'course-assets',
-  'project-documents',
+  CONTENT_DOCUMENT_BUCKET,
+  PUBLICATION_DOCUMENT_BUCKET,
+  COURSE_ASSETS_BUCKET,
+  PROJECT_DOCUMENTS_BUCKET,
 ] as const;
 
 /** Buckets عامة يمكن لأي زائر الوصول إليها برابط مباشر. */
-export const PUBLIC_CONTENT_BUCKETS = ['public-media', 'branding-assets'] as const;
+export const PUBLIC_CONTENT_BUCKETS = [PUBLIC_MEDIA_BUCKET, BRANDING_ASSETS_BUCKET] as const;
 
 export const ALL_CONTENT_BUCKETS = [...PUBLIC_CONTENT_BUCKETS, ...PRIVATE_CONTENT_BUCKETS] as const;
 
@@ -74,10 +101,17 @@ export function isImageStoragePath(storagePath: string): boolean {
   return IMAGE_EXTENSIONS.has(extensionOf(fileDisplayName(storagePath)));
 }
 
-/** رابط عرض مباشر للملفات العامة. */
+/**
+ * رابط عرض مباشر للملفات العامة فقط.
+ * لملفات الـ buckets الخاصة تُرجع '' لأن هذه المسارات لا تُقدَّم عبر
+ * رابط عام أبدًا — يجب استخدام Signed URL بدلًا من ذلك (راجع
+ * interactionService.getDocumentUrl). هذا يمنع توليد روابط عامة لـ buckets
+ * خاصة (مثل research-documents) التي كانت تسبب 404 "Bucket not found".
+ */
 export function contentFilePreviewUrl(storagePath: string): string {
   if (!storagePath) return '';
   const { bucket, path } = splitStoragePath(storagePath);
+  if (!isPublicBucket(bucket)) return '';
   return getPublicStorageUrl(bucket, path);
 }
 
@@ -147,7 +181,7 @@ function randomId(): string {
  */
 export async function uploadContentFile(
   file: File,
-  bucket: string = 'public-media',
+  bucket: string = PUBLIC_MEDIA_BUCKET,
 ): Promise<{ bucket: string; storagePath: string }> {
   const client = requireSupabase();
   const path = `${randomId()}-${sanitizeFileName(file.name)}`;

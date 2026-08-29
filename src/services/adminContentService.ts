@@ -49,6 +49,7 @@ export const ADMIN_ENTITY_MAP: Record<string, { table: string; axisType?: AxisCo
   interests: { table: 'research_interests' },
   calendar: { table: 'calendar_events' },
   announcements: { table: 'announcements' },
+  selections: { table: 'scientific_selections' },
 };
 
 const SEARCHABLE_TITLE: Record<string, string> = {
@@ -65,17 +66,19 @@ const SEARCHABLE_TITLE: Record<string, string> = {
   research_interests: 'title_ar',
   calendar_events: 'title_ar',
   announcements: 'title_ar',
+  scientific_selections: 'title_ar',
 };
 
 /** أعمدة ملفات التخزين لكل جدول — تُستخدم لتنظيف الملفات اليتيمة عند حذف الصف. */
 const CONTENT_FILE_COLUMNS: Record<string, string[]> = {
-  research_papers: ['document_path'],
-  publications: ['document_path'],
+  research_papers: ['document_path', 'image_path'],
+  publications: ['document_path', 'image_path'],
   courses: ['image_path', 'materials_path'],
   lectures: ['image_path', 'materials_path'],
   news: ['image_path'],
   scientific_insights: ['image_path'],
   research_projects: ['image_path'],
+  scientific_selections: ['image_path', 'document_path'],
 };
 
 export const adminContentService = {

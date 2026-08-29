@@ -22,6 +22,7 @@ export {
   type LatestResearchItem,
 } from './homepageService';
 export { contactService } from './contactService';
+export { selectionsService } from './selectionsService';
 export { interactionService } from './interactionService';
 export { profileContentService, settingsService, DEFAULT_CONTACT_INFO } from './contentService';
 export { adminContentService, ADMIN_ENTITY_MAP, type AdminListParams, type AdminListResult } from './adminContentService';

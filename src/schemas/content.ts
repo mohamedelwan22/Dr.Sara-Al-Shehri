@@ -15,9 +15,13 @@ export const researchPaperSchema = z.object({
   institution_ar: z.string().max(300).optional().or(z.literal('')),
   institution_en: z.string().max(300).optional().or(z.literal('')),
   publication_year: z.coerce.number().int().min(1800).max(2100).optional().nullable(),
+  research_type: z.string().max(100).optional().or(z.literal('')),
   abstract_ar: z.string().max(10000).optional().or(z.literal('')),
   abstract_en: z.string().max(10000).optional().or(z.literal('')),
+  image_path: z.string().max(500).optional().nullable().or(z.literal('')),
   document_path: z.string().max(500).optional().nullable().or(z.literal('')),
+  sort_order: z.coerce.number().int().default(0),
+  featured: z.boolean().default(false),
   axisIds: z.array(z.string()).default([]),
 });
 
@@ -184,8 +188,32 @@ export const profileSectionSchema = z.object({
   status: contentStatusSchema.default('published'),
 });
 
+export const scientificSelectionSchema = z.object({
+  section: z.enum(['selected_research', 'selected_publications', 'distinguished_theses']),
+  title_ar: z.string().min(1, { message: 'fieldRequired' }).max(500),
+  title_en: z.string().max(500).optional().or(z.literal('')),
+  subtitle_ar: z.string().max(500).optional().or(z.literal('')),
+  subtitle_en: z.string().max(500).optional().or(z.literal('')),
+  author_ar: z.string().max(300).optional().or(z.literal('')),
+  author_en: z.string().max(300).optional().or(z.literal('')),
+  university_ar: z.string().max(300).optional().or(z.literal('')),
+  university_en: z.string().max(300).optional().or(z.literal('')),
+  journal_ar: z.string().max(300).optional().or(z.literal('')),
+  journal_en: z.string().max(300).optional().or(z.literal('')),
+  publication_year: z.string().max(100).optional().or(z.literal('')),
+  grant_year: z.string().max(100).optional().or(z.literal('')),
+  summary_ar: z.string().max(10000).optional().or(z.literal('')),
+  summary_en: z.string().max(10000).optional().or(z.literal('')),
+  image_path: z.string().max(500).optional().nullable().or(z.literal('')),
+  document_path: z.string().max(500).optional().nullable().or(z.literal('')),
+  read_url: contentUrlSchema,
+  sort_order: z.coerce.number().int().default(0),
+  is_active: z.boolean().default(true),
+});
+
 export type ProfileContentValues = z.infer<typeof profileContentSchema>;
 export type ProfileSectionValues = z.infer<typeof profileSectionSchema>;
+export type ScientificSelectionValues = z.infer<typeof scientificSelectionSchema>;
 
 export type ResearchPaperValues = z.infer<typeof researchPaperSchema>;
 export type SupervisionValues = z.infer<typeof supervisionSchema>;

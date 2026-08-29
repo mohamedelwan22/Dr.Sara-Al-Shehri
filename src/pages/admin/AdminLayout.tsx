@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   User,
   BookOpen,
+  BookMarked,
   Layers,
   Inbox,
   Users,
@@ -34,6 +35,7 @@ const MAIN_LINKS = [
 ];
 
 const CONTENT_LINKS = [
+  { to: '/admin/selections', key: 'admin.entities.selections', icon: BookMarked },
   { to: '/admin/research', key: 'admin.entities.research', icon: BookOpen },
   { to: '/admin/publications', key: 'admin.entities.publications', icon: FileText },
   { to: '/admin/supervision', key: 'admin.entities.supervision', icon: GraduationCap },

@@ -34,6 +34,7 @@ const INVALIDATIONS: Record<string, readonly (readonly string[])[]> = {
   insights: [['insights']],
   news: [['news']],
   interests: [['interests']],
+  selections: [['scientific-selections']],
   calendar: [CALENDAR],
   announcements: [['announcements']],
 };

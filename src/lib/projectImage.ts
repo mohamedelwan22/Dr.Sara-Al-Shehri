@@ -17,7 +17,7 @@
  */
 
 import { getPublicStorageUrl } from '@/lib/supabase';
-import { splitStoragePath } from '@/lib/storageFiles';
+import { splitStoragePath, PUBLIC_MEDIA_BUCKET } from '@/lib/storageFiles';
 
 const ABSOLUTE_SCHEMES = ['http:', 'https:', 'data:', 'blob:'];
 
@@ -39,7 +39,7 @@ function isAbsoluteUrl(value: string): boolean {
  */
 export function resolveProjectImageUrl(
   imagePath: string | null | undefined,
-  defaultBucket = 'public-media',
+  defaultBucket = PUBLIC_MEDIA_BUCKET,
 ): string | null {
   // Treat missing / blank values as "no image"
   if (!imagePath || !imagePath.trim()) return null;

@@ -6,6 +6,7 @@ import { Seo } from '@/components/layout/Seo';
 import { researchService, queryKeys } from '@/services';
 import { Card, CardBody, ErrorState, LoadingState, Badge } from '@/components/ui';
 import { pickLang, formatDate } from '@/lib/utils';
+import { contentFilePreviewUrl, isImageStoragePath } from '@/lib/storageFiles';
 import { AxisTagsForSingle } from '@/features/scientific-map/AxisTags';
 import { RecordView, MetricsRow, DocumentDownloadButton } from '@/features/interactions/Interactions';
 import type { ResearchPaper } from '@/types';
@@ -42,21 +43,39 @@ export function WorkDetailPage({
   const institution = pickLang(paper.institution_ar, paper.institution_en, locale);
   const abstract = pickLang(paper.abstract_ar, paper.abstract_en, locale);
 
+  const hasImage = paper.image_path && isImageStoragePath(paper.image_path);
+  const imageUrl = hasImage ? contentFilePreviewUrl(paper.image_path as string) : '';
+
+  const researchBadgeText =
+    paper.research_type ||
+    (contentType === 'publication'
+      ? t('home.researchType.publication')
+      : t('home.researchType.research'));
+
   return (
     <>
       <Seo title={title ?? ''} description={abstract ?? undefined} />
       <RecordView contentType={contentType} contentId={paper.id} />
 
       <div className="container-page py-10">
-        <Link to={detailPrefix === 'research' ? '/research' : '/research?tab=publication'} className="btn-ghost px-0">
+        <Link to={detailPrefix === 'research' ? '/research' : '/research?tab=publication'} className="btn-ghost px-0 mb-4 inline-flex items-center gap-1.5">
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
           {t('common.back')}
         </Link>
 
-        <Card className="mt-4">
+        <Card className="overflow-hidden">
+          {hasImage && (
+            <div className="relative aspect-[21/9] w-full overflow-hidden bg-primary-950/10 border-b border-primary-100/60">
+              <img src={imageUrl} alt={title ?? ''} className="h-full w-full object-cover" />
+            </div>
+          )}
+
           <CardBody className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge tone="primary">{paper.publication_year ?? t('common.unknown')}</Badge>
+              <Badge tone="gold">{researchBadgeText}</Badge>
+              {paper.publication_year && (
+                <Badge tone="primary">{paper.publication_year}</Badge>
+              )}
               {paper.status === 'published' && <Badge tone="green">{t('common.published')}</Badge>}
             </div>
 
@@ -64,8 +83,8 @@ export function WorkDetailPage({
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slateGray-dark">
               {author && (
-                <span className="flex items-center gap-1.5">
-                  <UserIcon className="h-4 w-4 text-primary-400" />
+                <span className="flex items-center gap-1.5 font-medium text-primary-800">
+                  <UserIcon className="h-4 w-4 text-primary-500" />
                   {author}
                 </span>
               )}
@@ -87,7 +106,7 @@ export function WorkDetailPage({
               <div>
                 <h2 className="mb-2 font-display text-lg font-bold text-primary-900">{t('research.abstract')}</h2>
                 <div className="prose-arabic">
-                  <p>{abstract}</p>
+                  <p className="leading-relaxed text-slateGray-dark">{abstract}</p>
                 </div>
               </div>
             )}

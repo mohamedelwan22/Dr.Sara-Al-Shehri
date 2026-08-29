@@ -54,7 +54,21 @@ async function fetchList<T>(
     query = query.in('id', ids);
   }
 
-  const qFilter = filters.q ? buildIlikeOr(['title_ar', 'title_en'], filters.q) : '';
+  const qFilter = filters.q
+    ? buildIlikeOr(
+        [
+          'title_ar',
+          'title_en',
+          'author_ar',
+          'author_en',
+          'institution_ar',
+          'institution_en',
+          'abstract_ar',
+          'abstract_en',
+        ],
+        filters.q,
+      )
+    : '';
   if (qFilter) {
     query = query.or(qFilter);
   }

@@ -14,6 +14,7 @@ const TermsPage = lazy(() => import('@/pages/legal/TermsPage').then((m) => ({ de
 const ResearchListPage = lazy(() => import('@/pages/research/ResearchListPage').then((m) => ({ default: m.ResearchListPage })));
 const ResearchDetailPage = lazy(() => import('@/pages/research/ResearchDetailPage').then((m) => ({ default: m.ResearchDetailPage })));
 const PublicationDetailPage = lazy(() => import('@/pages/research/PublicationDetailPage').then((m) => ({ default: m.PublicationDetailPage })));
+const ScientificSelectionsPage = lazy(() => import('@/pages/selections/ScientificSelectionsPage').then((m) => ({ default: m.ScientificSelectionsPage })));
 
 const SupervisionPage = lazy(() => import('@/pages/supervision/SupervisionPage').then((m) => ({ default: m.SupervisionPage })));
 const SupervisionDetailPage = lazy(() => import('@/pages/supervision/SupervisionPage').then((m) => ({ default: m.SupervisionDetailPage })));
@@ -74,6 +75,7 @@ export function App() {
           <Route path="/research" element={withSuspense(<ResearchListPage />)} />
           <Route path="/research/:slug" element={withSuspense(<ResearchDetailPage />)} />
           <Route path="/publications/:slug" element={withSuspense(<PublicationDetailPage />)} />
+          <Route path="/scientific-selections" element={withSuspense(<ScientificSelectionsPage />)} />
 
           <Route path="/supervision" element={withSuspense(<SupervisionPage />)} />
           <Route path="/supervision/:slug" element={withSuspense(<SupervisionDetailPage />)} />

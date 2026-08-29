@@ -41,6 +41,7 @@ const DESKTOP_NAV = [
   { to: '/biography', key: 'nav.biography', icon: User },
   { to: '/scientific-mission', key: 'nav.mission', icon: Target },
   { to: '/research-interests', key: 'nav.interests', icon: Microscope },
+  { to: '/research', key: 'nav.research', icon: BookOpen },
   { to: '/supervision', key: 'nav.supervision', icon: GraduationCap },
   { to: '/insights', key: 'nav.insights', icon: Sparkles },
   { to: '/discussions', key: 'nav.discussions', icon: Scale },
@@ -50,7 +51,6 @@ const DESKTOP_NAV = [
 
 const MOBILE_NAV = [
   ...DESKTOP_NAV,
-  { to: '/research', key: 'nav.research', icon: BookOpen },
   { to: '/calendar', key: 'nav.calendar', icon: CalendarDays },
   { to: '/scientific-map', key: 'nav.map', icon: Map },
   { to: '/news', key: 'nav.news', icon: Newspaper },

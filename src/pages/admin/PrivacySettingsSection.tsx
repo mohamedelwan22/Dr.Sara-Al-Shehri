@@ -5,7 +5,7 @@ import {
   ShieldCheck, Save, Plus, Edit2, Trash2, Upload, Image as ImageIcon,
 } from 'lucide-react';
 import { privacyService, queryKeys, DEFAULT_PRIVACY_INFO } from '@/services';
-import { uploadContentFile, contentFilePreviewUrl, validateContentFile } from '@/lib/storageFiles';
+import { uploadContentFile, contentFilePreviewUrl, validateContentFile, PUBLIC_MEDIA_BUCKET } from '@/lib/storageFiles';
 import {
   Button, Checkbox, FieldWrapper, Input, Textarea, Select, useToast, LoadingState,
 } from '@/components/ui';
@@ -116,7 +116,7 @@ export function PrivacySettingsSection() {
     }
     try {
       setUploadingArtwork(true);
-      const { storagePath } = await uploadContentFile(file, 'public-media');
+      const { storagePath } = await uploadContentFile(file, PUBLIC_MEDIA_BUCKET);
       const publicUrl = contentFilePreviewUrl(storagePath);
       handleInfoChange('artwork_url', publicUrl);
       toast.success(t('common.uploaded'));

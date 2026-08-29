@@ -31,6 +31,7 @@ export const queryKeys = {
   news: (filters?: unknown) => ['news', filters ?? {}] as const,
   newsItem: (slug: string) => ['news', 'item', slug] as const,
   insights: (filters?: unknown) => ['insights', filters ?? {}] as const,
+  scientificSelections: (filters?: unknown) => ['scientific-selections', filters ?? {}] as const,
   announcements: ['announcements'] as const,
   calendar: (range: unknown) => ['calendar', range] as const,
   home: {

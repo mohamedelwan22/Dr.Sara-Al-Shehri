@@ -13,7 +13,6 @@ import {
   FolderKanban,
   GraduationCap,
   Library,
-  LogIn,
   Megaphone,
   Quote,
   Search,
@@ -350,8 +349,6 @@ export function HomePage() {
               />
             </div>
 
-            {/* 5. QUICK ACCESS ROW */}
-            <QuickAccessRow />
           </main>
         </div>
       </div>
@@ -505,14 +502,20 @@ function ScientificSelectionsCard({
   ];
 
   return (
-    <section className="flex flex-col justify-between rounded-xl border border-[#E7DFED] bg-white p-4 shadow-[0_1px_4px_rgb(53_20_92_/_0.05)]">
+    <section className="flex flex-col justify-between rounded-xl border border-[#E7DFED] bg-white p-4 shadow-[0_1px_4px_rgb(53_20_92_/_0.05)] transition-all hover:border-[#D89A16]">
       <div>
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-base font-extrabold text-[#35145C]">مختارات علمية</h3>
+            <Link to="/scientific-selections" className="group">
+              <h3 className="font-display text-base font-extrabold text-[#35145C] group-hover:text-[#D89A16] transition-colors">
+                مختارات علمية
+              </h3>
+            </Link>
             <p className="mt-0.5 text-[10px] font-bold text-[#35145C]/80">أبحاث ومؤلفات ورسائل مختارة للباحثين</p>
           </div>
-          <BookMarked className="h-7 w-7 shrink-0 text-[#35145C]" />
+          <Link to="/scientific-selections">
+            <BookMarked className="h-7 w-7 shrink-0 text-[#35145C] hover:text-[#D89A16] transition-colors" />
+          </Link>
         </div>
 
         {isPending ? (
@@ -526,48 +529,30 @@ function ScientificSelectionsCard({
         ) : (
           <div className="space-y-2">
             {rows.map(({ label, value, icon: Icon }) => (
-              <div key={label} className="grid grid-cols-[24px_1fr_auto] items-center gap-2">
+              <Link
+                key={label}
+                to="/scientific-selections"
+                className="grid grid-cols-[24px_1fr_auto] items-center gap-2 rounded-lg p-1 transition-colors hover:bg-[#FAF6FC]"
+              >
                 <Icon className="h-4 w-4 text-[#35145C]" />
                 <span className="text-xs font-bold text-[#35145C]">{label}</span>
                 <span className="min-w-9 rounded-md bg-[#FFF8E8] px-2 py-0.5 text-center text-[11px] font-extrabold text-[#D89A16]">
                   {formatCount(value)}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
-    </section>
-  );
-}
 
-function QuickAccessRow() {
-  const { t } = useTranslation();
-
-  const items = [
-    { to: '/auth/sign-in', icon: LogIn, title: t('home.loginTitle'), subtitle: t('home.loginSubtitle') },
-    { to: '/scientific-map', icon: Sparkles, title: t('home.quickAssistant'), subtitle: t('home.quickAssistantSub') },
-    { to: '/insights', icon: Quote, title: t('home.quickInsights'), subtitle: t('home.quickInsightsSub') },
-    { to: '/news', icon: Bell, title: t('home.quickUpdates'), subtitle: t('home.quickUpdatesSub') },
-  ];
-
-  return (
-    <section aria-label={t('home.quickAccess')} className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-      {items.map(({ to, icon: Icon, title, subtitle }) => (
+      <div className="mt-3 pt-1 border-t border-slate-100">
         <Link
-          key={to}
-          to={to}
-          className="group flex min-h-[72px] items-center gap-3 rounded-xl border border-[#E7DFED] bg-white px-4 py-3 shadow-[0_1px_4px_rgb(53_20_92_/_0.05)] transition-all hover:border-[#D89A16] hover:bg-[#FFF8E8]"
+          to="/scientific-selections"
+          className="inline-flex w-full items-center justify-center rounded-lg border border-[#E7DFED] bg-white py-1.5 text-xs font-bold text-[#35145C] transition-colors hover:border-[#D89A16] hover:bg-[#FFF8E8]"
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#35145C] text-white shadow-[0_6px_14px_-8px_rgb(53_20_92_/_0.8)]">
-            <Icon className="h-5 w-5" />
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-extrabold text-[#35145C]">{title}</span>
-            <span className="mt-0.5 block truncate text-[11px] font-bold text-[#35145C]/80">{subtitle}</span>
-          </span>
+          <span>تصفح المختارات العلمية</span>
         </Link>
-      ))}
+      </div>
     </section>
   );
 }
